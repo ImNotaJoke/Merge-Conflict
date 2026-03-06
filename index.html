@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/index.css">
-    <script type="module" src="src/Parameter.ts" defer></script>
+    <script type="module" src="./src/main.ts" defer></script>
     <title>Merge Conflict</title>
 </head>
 <body>
@@ -34,10 +34,12 @@
         </div>
 
         <footer>
-            <button class="credits">Crédits</button>
+            <form class="credits-form">
+                <button type="submit" class="credits">Crédits</button>
+            </form>
         </footer>
     </section>
-    <section class="credits">
+    <section class="credits-section hidden">
         <h1>Crédits</h1>
         <table>
             <thead>
