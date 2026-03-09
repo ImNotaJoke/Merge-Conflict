@@ -1,7 +1,5 @@
 import type { BestScore } from "./domain/types";
 
-const todayDate:Date = new Date(Date.now());
-
 const bestScores:BestScore[] = [];
 
 export function renderLeaderboard() {
