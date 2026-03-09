@@ -1,4 +1,5 @@
 import { render } from "./credits";
+import "./Parameter";
 
 const creditsform = document.querySelector(".credits-form");
 const creditBackButton = document.querySelector(".credit-back");

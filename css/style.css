@@ -262,3 +262,9 @@ footer {
 .rejouer-back {
   width: 20%;
 }
+
+label {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
