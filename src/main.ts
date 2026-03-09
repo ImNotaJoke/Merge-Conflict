@@ -1,5 +1,5 @@
 import { render } from "./credits";
-import "./Parameter";
+import { initializeEventListeners } from "./Parameter";
 import { renderLeaderboard } from "./leaderboard";
 
 const creditsform = document.querySelector(".credits-form");
@@ -16,6 +16,10 @@ const video = document.querySelector('.back-video,source') as HTMLVideoElement |
 const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement | null;
 const leaderboardTable = document.querySelector('.leaderboard-section table tbody');
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
+
+
+initializeEventListeners();
+
 
 creditsform?.addEventListener('submit', (event) => {
     event.preventDefault();
