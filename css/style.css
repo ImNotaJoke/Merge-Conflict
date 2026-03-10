@@ -3,6 +3,22 @@
   --secondary-color: #333;
 }
 
+.starter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-image: url("https://preview.redd.it/doom-slayer-and-isabelle-doom-eternal-and-animal-crossing-v0-tyzxrbd2l6u41.png?width=1080&crop=smart&auto=webp&s=8b9bd1da3473d9746e5b2319b9aff37519dab770");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body {
+  margin: 0;
+}
+
 .parameter-icon {
   position: fixed;
   top: 10px;
@@ -182,7 +198,13 @@ footer {
   z-index: 1;
 }
 
-.credits, .back-btn, .rejouer-back {
+.starter-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.credits, .back-btn, .rejouer-back, .starter-btn {
   padding: 12px 30px;
   border: none;
   border-radius: 20px;
@@ -196,7 +218,12 @@ footer {
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-.credits:hover, .back-btn:hover, .rejouer-back:hover {
+.starter-btn {
+  font-size: 22px;
+  width: 30vw;
+  z-index: 1;
+}
+.credits:hover, .back-btn:hover, .rejouer-back:hover, .starter-btn:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.3);

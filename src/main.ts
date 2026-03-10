@@ -5,6 +5,9 @@ import { renderLeaderboard } from "./leaderboard";
 const creditsform = document.querySelector(".credits-form");
 const backBtn = document.querySelectorAll(".back-btn");
 
+const starterBtn = document.querySelector(".starter-btn");
+const starterSection = document.querySelector(".starter");
+
 const mainMenuSection = document.querySelector("section.main-menu");
 const creditsSection = document.querySelector(".credits-section")!;
 const leaderBoardSection = document.querySelector('.leaderboard-section')!;
@@ -17,9 +20,8 @@ const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement 
 const leaderboardTable = document.querySelector('.leaderboard-section table tbody');
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
 
-
 initializeEventListeners();
-
+video?.pause();
 
 creditsform?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -53,9 +55,16 @@ leaderboardBtn?.addEventListener('click', (event) => {
     if(leaderboardTable) leaderboardTable.innerHTML = renderLeaderboard();
 });
 
+starterBtn?.addEventListener('click', (event) => {
+    event.preventDefault();
+    menuSelection("main");
+    video?.play();
+});
+
 function menuSelection(menu:string) {
     switch(menu) {
         case "main":
+            starterSection?.classList.add("hidden");
             mainMenuSection?.classList.remove("hidden");
             overSection.classList.add("hidden");
             settingsBtn?.classList.remove("hidden");
