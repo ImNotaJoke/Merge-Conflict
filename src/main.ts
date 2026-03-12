@@ -61,7 +61,7 @@ starterBtn?.addEventListener('click', (event) => {
     video?.play();
 });
 
-function menuSelection(menu:string) {
+export function menuSelection(menu:string) {
     switch(menu) {
         case "main":
             starterSection?.classList.add("hidden");
