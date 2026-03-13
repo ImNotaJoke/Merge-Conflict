@@ -21,7 +21,7 @@ export class Player {
     shootSpeed: number;
     projectileSize: number;
     projectileDamage:number;
-    models = [];
+    models:HTMLImageElement[] = [];
 
     constructor() {
         this.health = 3;
