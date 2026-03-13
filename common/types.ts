@@ -16,6 +16,8 @@ export interface BestScore {
 export class Player {
     // Idée : Ajouter des types de projectile avec effets différents
     // Exemple : type électrique qui touche plusieurs ennemis comme l'électro-sorcier
+    posX:number;
+    posY:number;
     pseudo: string;
     health: number;
     score: number;
@@ -24,7 +26,9 @@ export class Player {
     projectileDamage:number;
     models:HTMLImageElement[] = [];
 
-    constructor() {
+    constructor(posX:number, posY:number) {
+        this.posX = posX;
+        this.posY = posY;
         this.health = 3;
         this.score = 0;
         this.shootSpeed = 10;
@@ -72,7 +76,7 @@ export class Ennemi {
     projsize:number;
     shootspeed: number;
 
-    constructor(posX:number, posY:number, health?:number, projsize?:number, shootspeed?:number) {
+    constructor(posX:number, posY:number, health?:number, projsize?:number, shootspeed?:number, ) {
         this.health = health || 1;
         this.projsize = projsize || 1;
         this.shootspeed = shootspeed || 1;

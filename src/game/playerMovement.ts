@@ -8,18 +8,18 @@ export let x: number = 0,
  y: number = 0,
  vy: number = 0;
 
-import { image } from "./gameRendering";
+import { player } from "./gameRendering";
 import { menuSelection } from "../main";
 
 // Gestion du mouvement du personnage
 function move() {
-	if (x >= canvas.width - image.width && vx > 0) x -= 2 * vx;
-	else if (x <= 0 && vx < 0) x -= 2 * vx;
+	if (player.posX >= canvas.width - player.models[0].width && vx > 0) player.posX -= 2 * vx;
+	else if (player.posX <= 0 && vx < 0) player.posX -= 2 * vx;
 
-	if (y >= canvas.height - image.height && vy > 0) y -= 2 * vy;
-	else if (y <= 0 && vy < 0) y -= 2 * vy;
-	x += vx;
-	y += vy;
+	if (player.posY >= canvas.height - player.models[0].height && vy > 0) player.posY -= 2 * vy;
+	else if (player.posY <= 0 && vy < 0) player.posY -= 2 * vy;
+	player.posX += vx;
+	player.posY += vy;
 }
 setInterval(move, 1000 / 60);
 
