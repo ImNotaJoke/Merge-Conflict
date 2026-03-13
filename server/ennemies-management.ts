@@ -35,5 +35,6 @@ export function startPlaying() {
 }
 export function stopPlaying() {
     playing = false;
+    ennemies.length = 0;
     console.log("Fin du jeu");
 }

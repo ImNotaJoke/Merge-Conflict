@@ -1,7 +1,7 @@
 import { render } from "./credits";
 import { initializeEventListeners } from "./Parameter";
 import { renderLeaderboard } from "./leaderboard";
-import { image } from "./game/gameRendering";
+import { player } from "./game/gameRendering";
 import { io } from "socket.io-client";
 
 const socket = io(window.location.hostname + ':8080');
@@ -26,6 +26,7 @@ const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement 
 const leaderboardTable = document.querySelector('.leaderboard-section table tbody');
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
 
+const pseudoInput = document.querySelector<HTMLInputElement>(".pseudo");
 
 initializeEventListeners();
 video?.pause();
@@ -47,6 +48,9 @@ backBtn.forEach((btn) => {
 soloButton?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("game");
+    if(pseudoInput?.value && pseudoInput.value.length > 0) {
+        player.setPseudo(pseudoInput?.value);
+    }
 });
 
 overBackButton?.addEventListener('click', (event) => {

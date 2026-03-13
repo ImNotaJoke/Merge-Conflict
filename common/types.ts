@@ -16,6 +16,7 @@ export interface BestScore {
 export class Player {
     // Idée : Ajouter des types de projectile avec effets différents
     // Exemple : type électrique qui touche plusieurs ennemis comme l'électro-sorcier
+    pseudo: string;
     health: number;
     score: number;
     shootSpeed: number;
@@ -29,6 +30,7 @@ export class Player {
         this.shootSpeed = 10;
         this.projectileSize = 5;
         this.projectileDamage = 1;
+        this.pseudo = "Guest";
     }
 
     takeHealth() {
@@ -56,6 +58,10 @@ export class Player {
 
     shoot() {
         console.log("Time to bleed !");
+    }
+
+    setPseudo(pseudo:string) {
+        this.pseudo = pseudo;
     }
 }
 
