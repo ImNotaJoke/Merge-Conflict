@@ -52,19 +52,36 @@ function render() {
 	requestAnimationFrame(render);
 }
 
+function bulletsAreColliding(posX:number, posY:number) {
+	for (let i = activeBullets.length - 1; i >= 0; i--) {
+        const balle = activeBullets[i];
+        const diffX = Math.abs(balle.bx - posX);
+        const diffY = Math.abs(balle.by - posY);
+		if(diffX < ENNEMI_RENDER_WIDTH && diffY < ENNEMI_RENDER_HEIGHT) {
+            activeBullets.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
+		
+    };
+
+
 function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
 
-	for (const ennemi of ennemies) {
-		const renderX = Math.min(
-			(ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX,
-			maxRenderX,
-		);
-		const renderY = Math.min(
-			(ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY,
-			maxRenderY,
-		);
+	for (let i = ennemies.length - 1; i >= 0; i--) {
+        const ennemi = ennemies[i];
+        const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
+        const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+
+        if (bulletsAreColliding(renderX, renderY)) {
+			socket.emit("enemyHurt", i);
+            player.score+=100;
+            console.log("Un ennemi a été touché ! Score :", player.score);
+            continue; 
+        }
 
 		context.drawImage(
 			ennemiImage,

@@ -1,7 +1,7 @@
 import http from 'http';
 import { Server as IOServer } from 'socket.io';
 import type { LeaderboardEntry } from '../common/types.ts';
-import { startPlaying, stopPlaying } from './ennemies-management.ts';
+import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi } from './ennemies-management.ts';
 import { getLeaderboard, saveScore } from './leaderboard-storage.ts';
 
 const name: string = process.argv[2];
@@ -29,6 +29,12 @@ io.on('connection', socket => {
     socket.on("stopPlaying", () => {
         stopPlaying();
 	});
+	socket.on("enemyKilled", (index: number) => {
+        removeEnnemi(index);
+    });
+	socket.on("enemyHurt", (index: number) => {
+        hurtEnnemi(index);
+    })
 	socket.on("submitScore", async (entry: LeaderboardEntry, ack?: (success: boolean) => void) => {
 		if (!entry?.pseudo || !Number.isFinite(entry?.score) || !entry?.date) {
 			ack?.(false);

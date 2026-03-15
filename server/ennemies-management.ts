@@ -14,11 +14,29 @@ let currentSpawnIntervalMs:number = initialSpawnIntervalMs;
 let spawnTimeout: NodeJS.Timeout | undefined;
 
 function spawnEnnemi() {
-    const newEnnemi = new Ennemi(rightWall, Math.random() * arenaHeight);
+    const newEnnemi = new Ennemi(rightWall, Math.random() * arenaHeight,25);
     ennemies.push(newEnnemi);
     io.emit("ennemiEvent", ennemies);
     console.log(`Un ennemi est apparu en (${newEnnemi.posX}, ${newEnnemi.posY})`);
     console.log(`Nombre d'ennemis : ${ennemies.length}`);
+}
+
+export function removeEnnemi(index: number) {
+    if (index >= 0 && index < ennemies.length) {
+        ennemies.splice(index, 1); 
+        io.emit("ennemiEvent", ennemies); 
+    }
+}
+
+export function hurtEnnemi(index: number) {
+    if (index >= 0 && index < ennemies.length) {
+        if(ennemies[index].health <= 0) {
+            removeEnnemi(index);
+            return;
+        }
+        ennemies[index].hurt();
+        return;
+    }
 }
 
 function scheduleNextSpawn() {
