@@ -6,15 +6,15 @@ import { socket } from "../socket";
 // Image du personnage principal
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
-const ENNEMI_RENDER_WIDTH = 64;
-const ENNEMI_RENDER_HEIGHT = 64;
+export const ENNEMI_RENDER_WIDTH = 64;
+export const ENNEMI_RENDER_HEIGHT = 64;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
 
 export const player:Player = new Player(0, 0);
 export const image = new Image();
 const ennemiImage = new Image();
-let ennemies: Pick<Ennemi, "posX" | "posY">[] = [];
+export let ennemies: Pick<Ennemi, "posX" | "posY">[] = [];
 
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
 ennemiImage.src = '../../assets/character/ennemi/mob1/mob1.png';

@@ -8,14 +8,22 @@ export let x: number = 0,
  y: number = 0,
  vy: number = 0;
 
-import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRendering";
 import { menuSelection } from "../main";
+import { ennemies, player } from "./gameRendering";
+import type { Ennemi } from "../../common/types";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT, ENNEMI_RENDER_WIDTH } from "./gameRendering";
 
 export function resetPlayerPosition() {
 	vx = 0;
 	vy = 0;
 	x = 0;
 	y = 0;
+}
+
+function areColliding(ennemi:Pick<Ennemi, "posX" | "posY">) {
+	const diffX = Math.abs(x - ennemi.posX);
+	const diffY = Math.abs(y - ennemi.posY);
+	return diffX < (PLAYER_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) && diffY < (PLAYER_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT);
 }
 
 // Gestion du mouvement du personnage
@@ -27,6 +35,14 @@ function move() {
 	else if (y <= 0 && vy < 0) y -= 2 * vy;
 	x += vx;
 	y += vy;
+	ennemies.forEach( (ennemi) => {
+		if(areColliding(ennemi)) {
+			player.takeHealth();
+			if(!player.verifyHealth()) {
+				menuSelection("over");
+			}
+		}
+	})
 }
 setInterval(move, 1000 / 60);
 
