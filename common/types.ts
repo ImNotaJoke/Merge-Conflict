@@ -54,11 +54,14 @@ export class Player {
     }
 
     takeHealth() {
-        this.health--;
-        this.invincibility = true;
-        setTimeout(() => {
-            this.invincibility = false;
-        }, 3000);
+        if(!this.invincibility) {
+            console.log(`Vie perdue. Il reste ${this.health} coeurs`);
+            this.health--;
+            this.invincibility = true;
+            setTimeout(() => {
+                this.invincibility = false;
+            }, 3000);
+        }
     }
 
     verifyHealth() {

@@ -2,19 +2,22 @@ import { Ennemi, Player } from "../../common/types.ts";
 import { canvas, context, x, y } from "./playerMovement.ts";
 import { bullet, activeBullets, updateBullets } from "./playerShoot.ts";
 import { socket } from "../socket";
+import { menuSelection } from "../main.ts";
 
 // Image du personnage principal
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
-export const ENNEMI_RENDER_WIDTH = 64;
-export const ENNEMI_RENDER_HEIGHT = 64;
+const ENNEMI_RENDER_WIDTH = 64;
+const ENNEMI_RENDER_HEIGHT = 64;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
+
+const hearts = document.querySelectorAll(".game-stat-heart");
 
 export const player:Player = new Player(0, 0);
 export const image = new Image();
 const ennemiImage = new Image();
-export let ennemies: Pick<Ennemi, "posX" | "posY">[] = [];
+let ennemies: Pick<Ennemi, "posX" | "posY">[] = [];
 
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
 ennemiImage.src = '../../assets/character/ennemi/mob1/mob1.png';
@@ -37,6 +40,11 @@ bullet.addEventListener('load', () => {
 	requestAnimationFrame(render);
 });
 
+function areColliding(posX:number, posY:number) {
+	const diffX = Math.abs(x - posX);
+	const diffY = Math.abs(y - posY);
+	return diffX < (PLAYER_RENDER_WIDTH / 2 + ENNEMI_RENDER_WIDTH / 2) && diffY < (PLAYER_RENDER_HEIGHT / 2 + ENNEMI_RENDER_HEIGHT / 2);
+}
 
 // Affichage de tous les éléments
 function render() {
@@ -44,12 +52,25 @@ function render() {
 	player.posX = x;
 	player.posY = y;
 	drawEnnemies();
+	drawHearts();
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	updateBullets();
 	activeBullets.forEach(balle => {
         context.drawImage(bullet, balle.bx, balle.by, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
     });
 	requestAnimationFrame(render);
+}
+
+function drawHearts() {
+	for(let i = 0; i < hearts.length; i++) {
+		if(i < player.health) {
+			hearts[i].setAttribute("src", "/assets/HeartIcon.png");
+			hearts[i].setAttribute("alt", "coeur de vie plein");
+		} else {
+			hearts[i].setAttribute("src", "/assets/HeartIconEmpty.png");
+			hearts[i].setAttribute("alt", "coeur de vie vide");
+		}
+	}
 }
 
 function drawEnnemies() {
@@ -65,6 +86,13 @@ function drawEnnemies() {
 			(ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY,
 			maxRenderY,
 		);
+
+		if(areColliding(renderX, renderY)) {
+			player.takeHealth();
+			if(!player.verifyHealth()) {
+				menuSelection("over");
+			}
+		}
 
 		context.drawImage(
 			ennemiImage,

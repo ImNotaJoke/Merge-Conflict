@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "pseudo": "Guest",
+    "score": 225,
+    "date": "2026-03-15T17:40:34.798Z"
+  },
+  {
+    "pseudo": "Guest",
+    "score": 215,
+    "date": "2026-03-15T17:39:16.000Z"
+  },
+  {
+    "pseudo": "Guest",
+    "score": 110,
+    "date": "2026-03-15T17:36:07.822Z"
+  },
+  {
+    "pseudo": "Guest",
+    "score": 90,
+    "date": "2026-03-15T17:36:41.732Z"
+  },
+  {
+    "pseudo": "Guest",
+    "score": 90,
+    "date": "2026-03-15T17:45:11.521Z"
+  },
+  {
+    "pseudo": "Guest",
+    "score": 90,
+    "date": "2026-03-15T17:45:11.524Z"
+  }
+]
