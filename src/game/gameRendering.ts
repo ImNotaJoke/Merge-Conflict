@@ -1,5 +1,6 @@
 import { Ennemi, Player } from "../../common/types.ts";
 import { canvas, context, x, y } from "./playerMovement.ts";
+import { bullet, activeBullets, updateBullets } from "./playerShoot.ts";
 import { socket } from "../socket";
 
 // Image du personnage principal
@@ -10,7 +11,7 @@ const ENNEMI_RENDER_HEIGHT = 64;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
 
-export const player:Player = new Player();
+export const player:Player = new Player(0, 0);
 export const image = new Image();
 const ennemiImage = new Image();
 let ennemies: Pick<Ennemi, "posX" | "posY">[] = [];
@@ -32,11 +33,22 @@ export function resetRenderedGameState() {
 	player.score = 0;
 }
 
+bullet.addEventListener('load', () => {
+	requestAnimationFrame(render);
+});
+
+
 // Affichage de tous les éléments
 function render() {
 	context.clearRect(0, 0, canvas.width, canvas.height);
+	player.posX = x;
+	player.posY = y;
 	drawEnnemies();
-	context.drawImage(image, x, y, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	updateBullets();
+	activeBullets.forEach(balle => {
+        context.drawImage(bullet, balle.bx, balle.by, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+    });
 	requestAnimationFrame(render);
 }
 

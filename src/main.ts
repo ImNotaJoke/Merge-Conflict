@@ -223,6 +223,7 @@ export function menuSelection(menu:string) {
             break;
         case "game":
             gameSection.classList.remove("hidden");
+            video?.setAttribute("src", "assets/DoomAmbience.mp4");
             startGameTimer();
             socket.emit("startPlaying");
             break;
