@@ -1,4 +1,4 @@
-import type { BestScore } from "./domain/types";
+import type { BestScore } from "../common/types";
 
 const bestScores:BestScore[] = [];
 

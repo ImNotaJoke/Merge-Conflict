@@ -1,7 +1,7 @@
 import { render } from "./credits";
 import { initializeEventListeners } from "./Parameter";
 import { renderLeaderboard } from "./leaderboard";
-import { image } from "./game/gameRendering";
+import { player } from "./game/gameRendering";
 import { io } from "socket.io-client";
 
 const socket = io(window.location.hostname + ':8080');
@@ -27,6 +27,8 @@ const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement 
 const leaderboardTable = document.querySelector('.leaderboard-section table tbody');
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
 
+const pseudoInput = document.querySelector<HTMLInputElement>(".pseudo");
+const pseudoDisplay = document.querySelector(".pseudo-displayer");
 
 initializeEventListeners();
 video?.pause();
@@ -48,6 +50,18 @@ backBtn.forEach((btn) => {
 soloButton?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("game");
+    if(pseudoInput?.value && pseudoInput.value.length > 0) {
+        player.setPseudo(pseudoInput?.value);
+        
+    }
+    if(pseudoDisplay){
+        const pseudo = player.pseudo;
+        if(pseudo.length > 12) {
+            pseudoDisplay.innerHTML = `Joueur : ${pseudo.substring(0, 12)}...`;
+        } else {
+            pseudoDisplay.innerHTML = `Joueur : ${pseudo}`;
+        }
+    }
 });
 
 overBackButton?.addEventListener('click', (event) => {
@@ -59,6 +73,7 @@ overBackButton?.addEventListener('click', (event) => {
 quitButton?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("main");
+    socket.emit("stopPlaying");
     video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
 })
 
@@ -100,6 +115,8 @@ export function menuSelection(menu:string) {
             break;
         case "game":
             gameSection.classList.remove("hidden");
+            video?.setAttribute("src", "assets/DoomAmbience.mp4");
+            socket.emit("startPlaying");
             break;
         default:
             console.error("Mauvais appel de menuSelection");

@@ -1,4 +1,4 @@
-import type { Developer } from "./domain/types";
+import type { Developer } from "../common/types";
 
 const devList:Developer[] = [
     {forename:"Florian", lastname:"GAVOILLE", surname:"flopsi", group:"I", favGame:"Minecraft", grade:100},

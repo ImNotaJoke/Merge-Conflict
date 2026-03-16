@@ -318,8 +318,8 @@ label {
   margin-top: 20px;
   align-items: center;
   justify-content: space-between;
-  height: 20vh;
-  width: 90%;
+  height: 15vh;
+  width: 89%;
   padding: 10px 50px 10px 50px;
 
   color: white;
@@ -342,7 +342,7 @@ label {
 
 .game-stat-item {
   padding: 10px 50px 10px 50px;
-  border: 3px solid black;
+  border: 2px solid white;
   border-radius: 10px;
 }
 
