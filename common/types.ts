@@ -122,4 +122,8 @@ export class Ennemi {
     hurt() {
         this.health--;
     }
+
+    kill() {
+        this.health = 0;
+    }
 }

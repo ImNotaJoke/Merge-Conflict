@@ -126,6 +126,10 @@ function drawEnnemies() {
 			}
 		}
 
+		if(renderY == 0) {
+			ennemi.kill();
+		}
+
 		context.drawImage(
 			ennemiImage,
 			renderX,

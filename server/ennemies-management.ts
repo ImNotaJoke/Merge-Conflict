@@ -40,7 +40,7 @@ export function hurtEnnemi(index: number) {
 }
 
 function scheduleNextSpawn() {
-    if (!playing || ennemies.length >= 50) {
+    if (!playing) {
         return;
     }
 
@@ -48,8 +48,8 @@ function scheduleNextSpawn() {
         if (!playing) {
             return;
         }
-
-        spawnEnnemi();
+        if(ennemies.length < 50) spawnEnnemi();
+        
         currentSpawnIntervalMs = Math.max(
             minimumSpawnIntervalMs,
             currentSpawnIntervalMs - spawnAccelerationMs,
