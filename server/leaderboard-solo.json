@@ -1,5 +1,11 @@
 [
   {
+    "pseudo": "Guest",
+    "score": 1120,
+    "date": "2026-03-16T20:49:54.599Z",
+    "mode": "solo"
+  },
+  {
     "pseudo": "sululu",
     "score": 915,
     "date": "2026-03-16T20:35:06.607Z",
@@ -15,6 +21,12 @@
     "pseudo": "sululu",
     "score": 915,
     "date": "2026-03-16T20:35:06.624Z",
+    "mode": "solo"
+  },
+  {
+    "pseudo": "sululu",
+    "score": 875,
+    "date": "2026-03-16T20:49:41.036Z",
     "mode": "solo"
   }
 ]
