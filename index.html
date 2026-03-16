@@ -17,6 +17,33 @@
     <header>
         <p id="settingsBtn" class="parameter-icon settingsBtn hidden"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></p>
     </header>
+    <section class="game-section hidden">
+        <div class="game-content">
+            <header class="game-header">
+                <div class="game-stats">
+                    <div class="game-stat-item">
+                        <p class="game-stat-label">Vie : </p>
+                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
+                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
+                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
+                    </div>
+                    <div class="game-stat-item">
+                        <p class="game-stat-label">Temps : 00:00</p>
+                    </div>
+                    <div class="game-stat-item">
+                        <p class="game-stat-label">Ennemis tués : 0</p>
+                    </div>
+                    <div class="game-stat-item">
+                        <p class="game-stat-label">Score : 0</p>
+                    </div>
+                </div>
+                <button class="game-leave-btn">Quitter</button>
+            </header>
+            <main class="game-main">
+                <canvas class="game-canva" width="600" height="400"></canvas>
+            </main>
+        </div>
+    </section>
     <div class="video-container">
         <video id="bgVideo" autoplay loop playsinline class="back-video">
             <source src="assets/DoomguyIsabelle.mp4" type="video/mp4">
@@ -79,16 +106,6 @@
             <article class="glassmorphism">
                 <h3 class="credit-title">Médias</h3>
                 <ul class="credit-content">
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
                     <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
                     <li>Vidéo du Game Over : https://www.youtube.com/watch?v=E-yQhjGHxPY</li>
                 </ul>
