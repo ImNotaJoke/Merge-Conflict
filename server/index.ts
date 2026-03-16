@@ -12,6 +12,8 @@ const httpServer = http.createServer((_req, res) => {
 	res.end(`Think ${name}, Think !\nPWD: ${process.env['PWD']}`);
 });
 
+const connections:string[] = [];
+
 const port = process.env['PORT'] || 8080;
 httpServer.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}/`);
@@ -20,8 +22,13 @@ httpServer.listen(port, () => {
 export const io = new IOServer(httpServer, { cors: { origin: true } });
 io.on('connection', socket => {
 	console.log(`Nouvelle connexion du client ${socket.id}`);
+	connections.push(socket.id);
     socket.on('disconnect', () => {
+		connections.splice(connections.indexOf(socket.id));
 		console.log(`Déconnexion du client ${socket.id}`);
+		if(connections.length === 0) {
+			stopPlaying();
+		}
 	});
     socket.on("startPlaying", () => {
         startPlaying();

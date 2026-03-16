@@ -2,6 +2,7 @@ import { Ennemi, Player } from "../../common/types.ts";
 import { canvas, context, x, y } from "./playerMovement.ts";
 import { bullet, activeBullets, updateBullets } from "./playerShoot.ts";
 import { socket } from "../socket";
+import { menuSelection } from "../main.ts";
 
 // Image du personnage principal
 export const PLAYER_RENDER_WIDTH = 56;
@@ -10,6 +11,8 @@ const ENNEMI_RENDER_WIDTH = 64;
 const ENNEMI_RENDER_HEIGHT = 64;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
+
+const hearts = document.querySelectorAll(".game-stat-heart");
 
 export const player:Player = new Player(0, 0);
 export const image = new Image();
@@ -37,6 +40,11 @@ bullet.addEventListener('load', () => {
 	requestAnimationFrame(render);
 });
 
+function areColliding(posX:number, posY:number) {
+	const diffX = Math.abs(x - posX);
+	const diffY = Math.abs(y - posY);
+	return diffX < (PLAYER_RENDER_WIDTH / 2 + ENNEMI_RENDER_WIDTH / 2) && diffY < (PLAYER_RENDER_HEIGHT / 2 + ENNEMI_RENDER_HEIGHT / 2);
+}
 
 // Affichage de tous les éléments
 function render() {
@@ -44,6 +52,7 @@ function render() {
 	player.posX = x;
 	player.posY = y;
 	drawEnnemies();
+	drawHearts();
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	updateBullets();
 	activeBullets.forEach(balle => {
@@ -52,36 +61,38 @@ function render() {
 	requestAnimationFrame(render);
 }
 
-function bulletsAreColliding(posX:number, posY:number) {
-	for (let i = activeBullets.length - 1; i >= 0; i--) {
-        const balle = activeBullets[i];
-        const diffX = Math.abs(balle.bx - posX);
-        const diffY = Math.abs(balle.by - posY);
-		if(diffX < ENNEMI_RENDER_WIDTH && diffY < ENNEMI_RENDER_HEIGHT) {
-            activeBullets.splice(i, 1);
-            return true;
-        }
-    }
-    return false;
-		
-    };
-
+function drawHearts() {
+	for(let i = 0; i < hearts.length; i++) {
+		if(i < player.health) {
+			hearts[i].setAttribute("src", "/assets/HeartIcon.png");
+			hearts[i].setAttribute("alt", "coeur de vie plein");
+		} else {
+			hearts[i].setAttribute("src", "/assets/HeartIconEmpty.png");
+			hearts[i].setAttribute("alt", "coeur de vie vide");
+		}
+	}
+}
 
 function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
 
-	for (let i = ennemies.length - 1; i >= 0; i--) {
-        const ennemi = ennemies[i];
-        const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
-        const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+	for (const ennemi of ennemies) {
+		const renderX = Math.min(
+			(ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX,
+			maxRenderX,
+		);
+		const renderY = Math.min(
+			(ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY,
+			maxRenderY,
+		);
 
-        if (bulletsAreColliding(renderX, renderY)) {
-			socket.emit("enemyHurt", i);
-            player.score+=100;
-            console.log("Un ennemi a été touché ! Score :", player.score);
-            continue; 
-        }
+		if(areColliding(renderX, renderY)) {
+			player.takeHealth();
+			if(!player.verifyHealth()) {
+				menuSelection("over");
+			}
+		}
 
 		context.drawImage(
 			ennemiImage,

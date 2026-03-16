@@ -8,8 +8,8 @@ export let x: number = 0,
  y: number = 0,
  vy: number = 0;
 
-import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRendering";
 import { menuSelection } from "../main";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering";
 
 export function resetPlayerPosition() {
 	vx = 0;
@@ -31,7 +31,6 @@ function move() {
 setInterval(move, 1000 / 60);
 
 document.addEventListener('keydown', event => {
-	console.log(event.key);
 	switch (event.key) {
         case 'Z':
 		case 'z' :

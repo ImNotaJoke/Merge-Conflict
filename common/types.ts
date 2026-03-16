@@ -35,6 +35,7 @@ export class Player {
     pseudo: string;
     health: number;
     score: number;
+    invincibility:boolean;
     shootSpeed: number;
     projectileSize: number;
     projectileDamage:number;
@@ -49,21 +50,27 @@ export class Player {
         this.projectileSize = 5;
         this.projectileDamage = 1;
         this.pseudo = "Guest";
+        this.invincibility = false;
     }
 
     takeHealth() {
-        this.health--;
+        if(!this.invincibility) {
+            this.health--;
+            this.invincibility = true;
+            setTimeout(() => {
+                this.invincibility = false;
+            }, 3000);
+        }
     }
 
     verifyHealth() {
-        if(this.health == 0) {
-            return false;
-        }
-        return true;
+        return this.health > 0;
     }
 
     giveHealth(hp:number) {
-        this.health += hp;
+        if(this.health < 3) {
+            this.health += hp;
+        }
     }
 
     giveShootSpeed(ssp:number) {

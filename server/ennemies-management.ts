@@ -40,7 +40,7 @@ export function hurtEnnemi(index: number) {
 }
 
 function scheduleNextSpawn() {
-    if (!playing) {
+    if (!playing || ennemies.length >= 50) {
         return;
     }
 
