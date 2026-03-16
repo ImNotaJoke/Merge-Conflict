@@ -6,9 +6,11 @@ import {
 	BULLET_RENDER_WIDTH,
 	bullet,
 	updateBullets,
+	secondPlayerBullets,
+	resetBullets,
 } from "./playerShoot.ts";
 import { socket } from "../socket";
-import { menuSelection } from "../main.ts";
+import { menuSelection, isCoopMode } from "../main.ts";
 
 // Image du personnage principal
 export const PLAYER_RENDER_WIDTH = 56;
@@ -28,7 +30,7 @@ let ennemies: Ennemi[] = [];
 // Second player management
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
-secondPlayerImage.src = '../../assets/character/isabelle/TOP/mtt1.png';
+secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
 
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
 ennemiImage.src = '../../assets/character/ennemi/mob1/mob1.png';
@@ -43,6 +45,7 @@ socket.on("ennemiEvent", (updatedEnnemies: Ennemi[]) => {
 
 // Receive second player position updates
 socket.on("secondPlayerUpdate", (data: SecondPlayerData) => {
+	if (!isCoopMode) return; // Ignore in solo mode
 	if (data.socketId === socket.id) return; // Ignore our own position
 	
 	if (!secondPlayer) {
@@ -65,6 +68,7 @@ export function resetRenderedGameState() {
 	player.health = 3;
 	player.killedEnnemies = 0;
 	secondPlayer = null;
+	resetBullets();
 }
 
 bullet.addEventListener('load', () => {
@@ -90,12 +94,18 @@ function render() {
 	activeBullets.forEach(balle => {
 		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
     });
+	// Draw second player bullets with different color tint
+	secondPlayerBullets.forEach(balle => {
+		context.globalAlpha = 0.7;
+		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
+		context.globalAlpha = 1.0;
+    });
 	requestAnimationFrame(render);
 }
 
 // Draw second player (no collision with first player)
 function drawSecondPlayer() {
-	if (!secondPlayer || !secondPlayer.model) return;
+	if (!secondPlayer || !secondPlayer.model || !secondPlayer.model.complete) return;
 	
 	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
@@ -109,6 +119,7 @@ function drawSecondPlayer() {
 }
 
 function bulletsAreColliding(posX:number, posY:number) {
+	// Check player 1 bullets
 	for (let i = activeBullets.length - 1; i >= 0; i--) {
         const balle = activeBullets[i];
         const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
@@ -122,6 +133,23 @@ function bulletsAreColliding(posX:number, posY:number) {
 			&& diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2
 		) {
             activeBullets.splice(i, 1);
+            return true;
+        }
+    }
+	// Check player 2 bullets
+	for (let i = secondPlayerBullets.length - 1; i >= 0; i--) {
+        const balle = secondPlayerBullets[i];
+        const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
+        const bulletCenterY = balle.by + BULLET_RENDER_HEIGHT / 2;
+        const ennemiCenterX = posX + ENNEMI_RENDER_WIDTH / 2;
+        const ennemiCenterY = posY + ENNEMI_RENDER_HEIGHT / 2;
+        const diffX = Math.abs(bulletCenterX - ennemiCenterX);
+        const diffY = Math.abs(bulletCenterY - ennemiCenterY);
+		if(
+			diffX < (BULLET_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) / 2
+			&& diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2
+		) {
+            secondPlayerBullets.splice(i, 1);
             return true;
         }
     }

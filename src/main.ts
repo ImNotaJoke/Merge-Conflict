@@ -5,6 +5,13 @@ import { player } from "./game/gameRendering";
 import { socket } from "./socket";
 import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer } from "./game/runManagement";
 
+// Game mode tracking
+export let isCoopMode = false;
+
+export function setCoopMode(value: boolean) {
+    isCoopMode = value;
+}
+
 
 const creditsform = document.querySelector(".credits-form");
 const backBtn = document.querySelectorAll(".back-btn");
@@ -20,6 +27,7 @@ const gameSection = document.querySelector(".game-section")!;
 const quitButton = document.querySelector(".game-leave-btn");
 
 const soloButton = document.querySelector(".game-btn.solo");
+const coopButton = document.querySelector(".game-btn.coop");
 const overBackButton = document.querySelector(".rejouer-back");
 const video = document.querySelector('.back-video,source') as HTMLVideoElement | null;
 const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement | null;
@@ -50,11 +58,30 @@ backBtn.forEach((btn) => {
 
 soloButton?.addEventListener('click', (event) => {
     event.preventDefault();
+    setCoopMode(false);
     startNewGame();
     menuSelection("game");
     if(pseudoInput?.value && pseudoInput.value.length > 0) {
         player.setPseudo(pseudoInput?.value);
         
+    }
+    if(pseudoDisplay){
+        const pseudo = player.pseudo;
+        if(pseudo.length > 12) {
+            pseudoDisplay.innerHTML = `Joueur : ${pseudo.substring(0, 12)}...`;
+        } else {
+            pseudoDisplay.innerHTML = `Joueur : ${pseudo}`;
+        }
+    }
+});
+
+coopButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    setCoopMode(true);
+    startNewGame();
+    menuSelection("game");
+    if(pseudoInput?.value && pseudoInput.value.length > 0) {
+        player.setPseudo(pseudoInput?.value);
     }
     if(pseudoDisplay){
         const pseudo = player.pseudo;
@@ -130,7 +157,7 @@ export function menuSelection(menu:string) {
             settingsBtn?.classList.remove("hidden");
             video?.setAttribute("src", "assets/DoomAmbience.mp4");
             startGameTimer();
-            socket.emit("startPlaying");
+            socket.emit("startPlaying", { isCoop: isCoopMode });
             break;
         default:
             console.error("Mauvais appel de menuSelection");

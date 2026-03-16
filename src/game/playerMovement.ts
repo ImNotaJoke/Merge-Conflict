@@ -16,11 +16,37 @@ const KEYBOARD_MOVE_SPEED = 3;
 import { getInputMode } from "../Parameter";
 import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering";
 import { socket } from "../socket";
+import { isCoopMode } from "../main";
+
+// Server arena dimensions for coordinate conversion
+const SERVER_ARENA_WIDTH = 1980;
+const SERVER_ARENA_HEIGHT = 720;
+
+// Convert local canvas position to server coordinates
+function toServerCoords(localX: number, localY: number) {
+	const maxLocalX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 1);
+	const maxLocalY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 1);
+	return {
+		posX: (localX / maxLocalX) * SERVER_ARENA_WIDTH,
+		posY: (localY / maxLocalY) * SERVER_ARENA_HEIGHT
+	};
+}
 
 // Emit player position for coop mode
 function emitPlayerPosition() {
-	socket.emit("playerMove", { posX: x, posY: y });
+	if (isCoopMode) {
+		const serverCoords = toServerCoords(x, y);
+		socket.emit("playerMove", serverCoords);
+	}
 }
+
+// Listen for position update requests (when a new player joins coop)
+socket.on("requestPositionUpdate", () => {
+	if (isCoopMode) {
+		const serverCoords = toServerCoords(x, y);
+		socket.emit("playerMove", serverCoords);
+	}
+});
 
 export function resetPlayerPosition() {
 	vx = 0;
