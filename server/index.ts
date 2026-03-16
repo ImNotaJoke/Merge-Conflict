@@ -1,6 +1,8 @@
 import http from 'http';
 import { Server as IOServer } from 'socket.io';
-import { startPlaying, stopPlaying } from './ennemies-management.ts';
+import type { LeaderboardEntry } from '../common/types.ts';
+import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi } from './ennemies-management.ts';
+import { getLeaderboard, saveScore } from './leaderboard-storage.ts';
 
 const name: string = process.argv[2];
 
@@ -26,5 +28,28 @@ io.on('connection', socket => {
     });
     socket.on("stopPlaying", () => {
         stopPlaying();
+	});
+	socket.on("enemyKilled", (index: number) => {
+        removeEnnemi(index);
+    });
+	socket.on("enemyHurt", (index: number) => {
+        hurtEnnemi(index);
     })
+	socket.on("submitScore", async (entry: LeaderboardEntry, ack?: (success: boolean) => void) => {
+		if (!entry?.pseudo || !Number.isFinite(entry?.score) || !entry?.date) {
+			ack?.(false);
+			return;
+		}
+
+		await saveScore({
+			pseudo: entry.pseudo,
+			score: Math.max(0, Math.trunc(entry.score)),
+			date: entry.date,
+		});
+		ack?.(true);
+	});
+	socket.on("getLeaderboard", async (ack?: (scores: LeaderboardEntry[]) => void) => {
+		const scores = await getLeaderboard();
+		ack?.(scores);
+	});
 });

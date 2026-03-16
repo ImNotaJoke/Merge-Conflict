@@ -8,22 +8,30 @@ export let x: number = 0,
  y: number = 0,
  vy: number = 0;
 
-import { player } from "./gameRendering";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRendering";
 import { menuSelection } from "../main";
+
+export function resetPlayerPosition() {
+	vx = 0;
+	vy = 0;
+	x = 0;
+	y = 0;
+}
 
 // Gestion du mouvement du personnage
 function move() {
-	if (player.posX >= canvas.width - player.models[0].width && vx > 0) player.posX -= 2 * vx;
-	else if (player.posX <= 0 && vx < 0) player.posX -= 2 * vx;
+	if (x >= canvas.width - PLAYER_RENDER_WIDTH && vx > 0) x -= 2 * vx;
+	else if (x <= 0 && vx < 0) x -= 2 * vx;
 
-	if (player.posY >= canvas.height - player.models[0].height && vy > 0) player.posY -= 2 * vy;
-	else if (player.posY <= 0 && vy < 0) player.posY -= 2 * vy;
-	player.posX += vx;
-	player.posY += vy;
+	if (y >= canvas.height - PLAYER_RENDER_HEIGHT && vy > 0) y -= 2 * vy;
+	else if (y <= 0 && vy < 0) y -= 2 * vy;
+	x += vx;
+	y += vy;
 }
 setInterval(move, 1000 / 60);
 
 document.addEventListener('keydown', event => {
+	console.log(event.key);
 	switch (event.key) {
         case 'Z':
 		case 'z' :

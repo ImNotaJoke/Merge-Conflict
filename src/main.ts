@@ -1,10 +1,9 @@
 import { render } from "./credits";
 import { initializeEventListeners } from "./Parameter";
-import { renderLeaderboard } from "./leaderboard";
+import { loadLeaderboard, renderLeaderboard } from "./leaderboard";
 import { player } from "./game/gameRendering";
-import { io } from "socket.io-client";
-
-const socket = io(window.location.hostname + ':8080');
+import { socket } from "./socket";
+import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer } from "./game/runManagement";
 
 
 const creditsform = document.querySelector(".credits-form");
@@ -30,6 +29,8 @@ const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
 const pseudoInput = document.querySelector<HTMLInputElement>(".pseudo");
 const pseudoDisplay = document.querySelector(".pseudo-displayer");
 
+
+
 initializeEventListeners();
 video?.pause();
 
@@ -49,6 +50,7 @@ backBtn.forEach((btn) => {
 
 soloButton?.addEventListener('click', (event) => {
     event.preventDefault();
+    startNewGame();
     menuSelection("game");
     if(pseudoInput?.value && pseudoInput.value.length > 0) {
         player.setPseudo(pseudoInput?.value);
@@ -66,21 +68,24 @@ soloButton?.addEventListener('click', (event) => {
 
 overBackButton?.addEventListener('click', (event) => {
     event.preventDefault();
+    resetCurrentGame();
     menuSelection("main");
     video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
 });
 
 quitButton?.addEventListener('click', (event) => {
     event.preventDefault();
+    resetCurrentGame();
     menuSelection("main");
-    socket.emit("stopPlaying");
     video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
-})
+});
 
 leaderboardBtn?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("leaderboard");
-    if(leaderboardTable) leaderboardTable.innerHTML = renderLeaderboard();
+    void loadLeaderboard().then(() => {
+        if (leaderboardTable) leaderboardTable.innerHTML = renderLeaderboard();
+    });
 });
 
 starterBtn?.addEventListener('click', (event) => {
@@ -89,6 +94,7 @@ starterBtn?.addEventListener('click', (event) => {
     menuSelection("main");
     video?.play();
 });
+
 
 export function menuSelection(menu:string) {
     starterSection?.classList.add("hidden");
@@ -107,6 +113,9 @@ export function menuSelection(menu:string) {
             creditsSection.classList.remove("hidden");
             break;
         case "over":
+            finalizeCurrentRun(true);
+            stopGameTimer();
+            socket.emit("stopPlaying");
             overSection.classList.remove('hidden');
             video?.setAttribute("src", "assets/DoomEnd.mp4");
             break;
@@ -116,6 +125,7 @@ export function menuSelection(menu:string) {
         case "game":
             gameSection.classList.remove("hidden");
             video?.setAttribute("src", "assets/DoomAmbience.mp4");
+            startGameTimer();
             socket.emit("startPlaying");
             break;
         default:

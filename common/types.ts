@@ -13,6 +13,20 @@ export interface BestScore {
     date:Date;
 }
 
+export interface LeaderboardEntry {
+    pseudo:string;
+    score:number;
+    date:string;
+}
+
+export interface GameRunStats {
+    pseudo:string;
+    survivalSeconds:number;
+    enemiesKilled:number;
+    score:number;
+    date:string;
+}
+
 export class Player {
     // Idée : Ajouter des types de projectile avec effets différents
     // Exemple : type électrique qui touche plusieurs ennemis comme l'électro-sorcier
