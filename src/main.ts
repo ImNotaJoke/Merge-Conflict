@@ -1,5 +1,6 @@
 import { render } from "./credits";
 import { renderLeaderboard } from "./leaderboard";
+import "./Parameter";
 
 const creditsform = document.querySelector(".credits-form");
 const backBtn = document.querySelectorAll(".back-btn");
