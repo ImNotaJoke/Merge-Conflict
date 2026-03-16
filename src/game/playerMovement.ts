@@ -15,6 +15,12 @@ const KEYBOARD_MOVE_SPEED = 3;
 
 import { getInputMode } from "../Parameter";
 import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering";
+import { socket } from "../socket";
+
+// Emit player position for coop mode
+function emitPlayerPosition() {
+	socket.emit("playerMove", { posX: x, posY: y });
+}
 
 export function resetPlayerPosition() {
 	vx = 0;
@@ -55,6 +61,7 @@ function move() {
 		vx = 0;
 		vy = 0;
 		moveWithMouse();
+		emitPlayerPosition();
 		return;
 	}
 
@@ -66,6 +73,7 @@ function move() {
 	x += vx;
 	y += vy;
 	clampPosition();
+	emitPlayerPosition();
 }
 setInterval(move, 1000 / 60);
 

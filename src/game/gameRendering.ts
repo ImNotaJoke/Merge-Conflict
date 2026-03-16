@@ -1,4 +1,4 @@
-import { Ennemi, Player } from "../../common/types.ts";
+import { Ennemi, Player, SecondPlayer, type SecondPlayerData } from "../../common/types.ts";
 import { canvas, context, x, y } from "./playerMovement.ts";
 import {
 	activeBullets,
@@ -25,6 +25,11 @@ export const image = new Image();
 const ennemiImage = new Image();
 let ennemies: Ennemi[] = [];
 
+// Second player management
+export let secondPlayer: SecondPlayer | null = null;
+const secondPlayerImage = new Image();
+secondPlayerImage.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
+
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
 ennemiImage.src = '../../assets/character/ennemi/mob1/mob1.png';
 player.models.push(image);
@@ -36,12 +41,30 @@ socket.on("ennemiEvent", (updatedEnnemies: Ennemi[]) => {
 	ennemies = updatedEnnemies;
 });
 
-socket.on
+// Receive second player position updates
+socket.on("secondPlayerUpdate", (data: SecondPlayerData) => {
+	if (data.socketId === socket.id) return; // Ignore our own position
+	
+	if (!secondPlayer) {
+		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId);
+		secondPlayer.setModel(secondPlayerImage);
+	} else {
+		secondPlayer.updatePosition(data.posX, data.posY);
+	}
+});
+
+// Handle second player disconnect
+socket.on("secondPlayerDisconnect", (socketId: string) => {
+	if (secondPlayer && secondPlayer.socketId === socketId) {
+		secondPlayer = null;
+	}
+});
 
 export function resetRenderedGameState() {
 	ennemies = [];
 	player.health = 3;
 	player.killedEnnemies = 0;
+	secondPlayer = null;
 }
 
 bullet.addEventListener('load', () => {
@@ -61,12 +84,28 @@ function render() {
 	player.posY = y;
 	drawEnnemies();
 	drawHearts();
+	drawSecondPlayer();
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	updateBullets();
 	activeBullets.forEach(balle => {
 		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
     });
 	requestAnimationFrame(render);
+}
+
+// Draw second player (no collision with first player)
+function drawSecondPlayer() {
+	if (!secondPlayer || !secondPlayer.model) return;
+	
+	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
+	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
+	
+	const renderX = Math.min((secondPlayer.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
+	const renderY = Math.min((secondPlayer.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+	
+	context.globalAlpha = 0.8; // Slight transparency to distinguish from P1
+	context.drawImage(secondPlayer.model, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	context.globalAlpha = 1.0;
 }
 
 function bulletsAreColliding(posX:number, posY:number) {

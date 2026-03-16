@@ -13,6 +13,8 @@ const httpServer = http.createServer((_req, res) => {
 });
 
 const connections:string[] = [];
+// Track player positions for coop
+const playerPositions: Map<string, { posX: number; posY: number }> = new Map();
 
 const port = process.env['PORT'] || 8080;
 httpServer.listen(port, () => {
@@ -25,6 +27,9 @@ io.on('connection', socket => {
 	connections.push(socket.id);
     socket.on('disconnect', () => {
 		connections.splice(connections.indexOf(socket.id));
+		playerPositions.delete(socket.id);
+		// Notify other players that this player disconnected
+		socket.broadcast.emit("secondPlayerDisconnect", socket.id);
 		console.log(`Déconnexion du client ${socket.id}`);
 		if(connections.length === 0) {
 			stopPlaying();
@@ -35,6 +40,16 @@ io.on('connection', socket => {
     });
     socket.on("stopPlaying", () => {
         stopPlaying();
+	});
+	// Handle player movement for coop - broadcast to other players
+	socket.on("playerMove", (data: { posX: number; posY: number }) => {
+		playerPositions.set(socket.id, data);
+		// Broadcast position to all other connected clients
+		socket.broadcast.emit("secondPlayerUpdate", {
+			posX: data.posX,
+			posY: data.posY,
+			socketId: socket.id
+		});
 	});
 	socket.on("enemyKilled", (index: number) => {
         removeEnnemi(index);

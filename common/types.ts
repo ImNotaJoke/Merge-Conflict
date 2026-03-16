@@ -127,3 +127,31 @@ export class Ennemi {
         this.health = 0;
     }
 }
+
+export interface SecondPlayerData {
+    posX: number;
+    posY: number;
+    socketId: string;
+}
+
+export class SecondPlayer {
+    posX: number;
+    posY: number;
+    socketId: string;
+    model: HTMLImageElement | null = null;
+
+    constructor(posX: number, posY: number, socketId: string) {
+        this.posX = posX;
+        this.posY = posY;
+        this.socketId = socketId;
+    }
+
+    updatePosition(posX: number, posY: number) {
+        this.posX = posX;
+        this.posY = posY;
+    }
+
+    setModel(image: HTMLImageElement) {
+        this.model = image;
+    }
+}
