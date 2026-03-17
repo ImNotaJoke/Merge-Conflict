@@ -72,11 +72,11 @@ export function hurtEnnemi(sessionId: string, index: number) {
 	if (!session) return;
 
 	if (index >= 0 && index < session.ennemies.length) {
+		session.ennemies[index].hurt();
 		if (session.ennemies[index].health <= 0) {
 			removeEnnemi(sessionId, index);
-			return;
+			io.emit("newEnnemyKilled")
 		}
-		session.ennemies[index].hurt();
 	}
 }
 

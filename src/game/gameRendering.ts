@@ -183,7 +183,7 @@ function drawEnnemies() {
 		if (bulletsAreColliding(renderX, renderY)) {
 			socket.emit("enemyHurt", i);
 			if (ennemi.health <= 0) {
-				player.ennemyKilled();
+				socket.emit("enemyKilled");
 			}
 		}
 

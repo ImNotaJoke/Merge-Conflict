@@ -206,6 +206,10 @@ socket.on("allyHealthUpdate", (data: { health: number }) => {
     updateAllyHealth(data.health);
 });
 
+socket.on("newEnnemyKilled", () => {
+    player.ennemyKilled();
+})
+
 function updateAllyHealth(health: number) {
     allyHearts.forEach((heart, i) => {
         if (i < health) {

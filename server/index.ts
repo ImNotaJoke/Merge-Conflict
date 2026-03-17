@@ -81,7 +81,7 @@ io.on('connection', socket => {
 			id: roomId,
 			hostId: socket.id,
 			hostPseudo: data.pseudo || "Guest",
-			status: 'waiting'
+			status: 'waiting',
 		};
 		rooms.set(roomId, room);
 		playerRooms.set(socket.id, roomId);
