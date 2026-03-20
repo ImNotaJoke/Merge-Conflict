@@ -13,10 +13,10 @@ let mouseTargetX: number | null = null,
 
 const KEYBOARD_MOVE_SPEED = 3;
 
-import { getInputMode } from "../Parameter";
-import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering";
-import { socket } from "../socket";
-import { isCoopMode } from "../main";
+import { getInputMode } from "../Parameter.ts";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
+import { socket } from "../socket.ts";
+import { isCoopMode } from "../main.ts";
 
 // Server arena dimensions for coordinate conversion
 const SERVER_ARENA_WIDTH = 1980;

@@ -35,8 +35,7 @@ export class Player {
     posY:number;
     pseudo: string;
     health: number;
-    //score: number;
-    killedEnnemies: number;
+    killedEnnemies;
     invincibility:boolean;
     shootSpeed: number;
     projectileSize: number;
@@ -47,17 +46,20 @@ export class Player {
         this.posX = posX;
         this.posY = posY;
         this.health = 3;
-        //this.score = 0;
         this.shootSpeed = 10;
         this.projectileSize = 5;
         this.projectileDamage = 1;
         this.pseudo = "Guest";
         this.invincibility = false;
-        this.killedEnnemies = 0;
+        this.killedEnnemies = new Map();
     }
 
-    ennemyKilled() {
-        this.killedEnnemies++;
+    ennemyKilled(id:number) {
+        if(!this.killedEnnemies.has(id)) {
+            this.killedEnnemies.set(id, 1);
+        } else {
+            this.killedEnnemies.set(id, this.killedEnnemies.get(id) + 1);
+        }
     }
 
     takeHealth() {
@@ -101,19 +103,19 @@ export class Ennemi {
     posX:number;
     posY:number;
     health:number;
-    projsize:number;
-    shootspeed: number;
+    moveSpeed:number;
+    imageId: number;
 
-    constructor(posX:number, posY:number, health?:number, projsize?:number, shootspeed?:number, ) {
-        this.health = health || 1;
-        this.projsize = projsize || 1;
-        this.shootspeed = shootspeed || 1;
+    constructor(posX:number, posY:number, health:number, moveSpeed:number, imageId: number ) {
+        this.health = health;
+        this.moveSpeed = moveSpeed;
         this.posX = posX;
         this.posY = posY;
+        this.imageId = imageId;
     }
 
     move() {
-        this.posX -= 3;
+        this.posX -= this.moveSpeed * 3;
     }
 
     shoot() {

@@ -1,9 +1,9 @@
-import { render } from "./credits";
-import { initializeEventListeners } from "./Parameter";
-import { loadLeaderboard, renderLeaderboard } from "./leaderboard";
-import { player } from "./game/gameRendering";
-import { socket } from "./socket";
-import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer } from "./game/runManagement";
+import { render } from "./credits.ts";
+import { initializeEventListeners } from "./Parameter.ts";
+import { loadLeaderboard, renderLeaderboard } from "./leaderboard.ts";
+import { player } from "./game/gameRendering.ts";
+import { socket } from "./socket.ts";
+import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer } from "./game/runManagement.ts";
 
 export let isCoopMode = false;
 export let currentRoomId: string | null = null;
@@ -206,8 +206,8 @@ socket.on("allyHealthUpdate", (data: { health: number }) => {
     updateAllyHealth(data.health);
 });
 
-socket.on("newEnnemyKilled", () => {
-    player.ennemyKilled();
+socket.on("newEnnemyKilled", (id:number) => {
+    player.ennemyKilled(id);
 })
 
 function updateAllyHealth(health: number) {

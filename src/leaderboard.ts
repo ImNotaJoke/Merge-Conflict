@@ -1,5 +1,5 @@
 import type { LeaderboardEntry } from "../common/types";
-import { socket } from "./socket";
+import { socket } from "./socket.ts";
 
 let soloScores: LeaderboardEntry[] = [];
 let coopScores: LeaderboardEntry[] = [];

@@ -9,7 +9,7 @@ import {
 	secondPlayerBullets,
 	resetBullets,
 } from "./playerShoot.ts";
-import { socket } from "../socket";
+import { socket } from "../socket.ts";
 import { menuSelection, isCoopMode, currentRoomId } from "../main.ts";
 
 export const PLAYER_RENDER_WIDTH = 56;
@@ -23,7 +23,7 @@ const hearts = document.querySelectorAll(".game-stat-heart:not(.ally-heart)");
 
 export const player: Player = new Player(0, 0);
 export const image = new Image();
-const ennemiImage = new Image();
+const ennemiImages = [new Image(), new Image()];
 let ennemies: Ennemi[] = [];
 let lastEmittedHealth = 3;
 
@@ -32,7 +32,8 @@ const secondPlayerImage = new Image();
 secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
 
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
-ennemiImage.src = '../../assets/character/ennemi/mob1/mob1.png';
+ennemiImages[0].src = '../../assets/character/ennemi/mob1/mob1.png';
+ennemiImages[1].src = '../../assets/character/ennemi/mob1/mob12.png';
 player.models.push(image);
 player.models[0].addEventListener('load', () => {
 	requestAnimationFrame(render);
@@ -63,7 +64,7 @@ socket.on("secondPlayerDisconnect", (socketId: string) => {
 export function resetRenderedGameState() {
 	ennemies = [];
 	player.health = 3;
-	player.killedEnnemies = 0;
+	player.killedEnnemies = new Map();
 	secondPlayer = null;
 	lastEmittedHealth = 3;
 	resetBullets();
@@ -202,7 +203,7 @@ function drawEnnemies() {
 			ennemi.kill();
 		}
 
-		context.drawImage(ennemiImage, renderX, renderY, ENNEMI_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT);
+		context.drawImage(ennemiImages[ennemi.imageId], renderX, renderY, ENNEMI_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT);
 	}
 }
 

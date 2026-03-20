@@ -1,15 +1,16 @@
 import type { GameRunStats, LeaderboardEntry } from "../../common/types";
-import { resetRenderedGameState } from "./gameRendering";
-import { resetPlayerPosition } from "./playerMovement";
-import { socket } from "../socket";
-import { player } from "./gameRendering";
-import { isCoopMode } from "../main";
+import { resetRenderedGameState } from "./gameRendering.ts";
+import { resetPlayerPosition } from "./playerMovement.ts";
+import { socket } from "../socket.ts";
+import { player } from "./gameRendering.ts";
+import { isCoopMode } from "../main.ts";
 
 const gameTimeLabel = document.querySelector(".game-time-label");
 const gameKillsLabel = document.querySelector(".game-kills-label");
 const gameScoreLabel = document.querySelector(".game-score-label");
 const overSummaryTimeKills = document.querySelector(".over-summary-time-kills");
 const overSummaryScore = document.querySelector(".over-summary-score");
+const scoreAtDeath = [100, 200];
 
 let gameTimer: ReturnType<typeof setInterval> | undefined;
 let gameStartTimeMs = 0;
@@ -26,7 +27,7 @@ export function resetCurrentGame() {
     stopGameTimer();
     resetPlayerPosition();
     resetRenderedGameState();
-    player.killedEnnemies = 0;
+    player.killedEnnemies = new Map();
     isGameOver = false;
     finalScore = 0;
     finalSurvivalSeconds = 0;
@@ -38,7 +39,7 @@ export function startNewGame() {
     stopGameTimer();
     resetPlayerPosition();
     resetRenderedGameState();
-    player.killedEnnemies = 0;
+    player.killedEnnemies = new Map();
     isGameOver = false;
     finalScore = 0;
     finalSurvivalSeconds = 0;
@@ -68,7 +69,7 @@ export function stopGameTimer() {
 function updateInGameStats(elapsedSeconds: number) {
     const displaySeconds = isGameOver ? finalSurvivalSeconds : elapsedSeconds;
     const displayScore = isGameOver ? finalScore : computeScore(elapsedSeconds, player.killedEnnemies);
-    const displayKills = isGameOver ? (lastRunStats?.enemiesKilled ?? player.killedEnnemies) : player.killedEnnemies;
+    const displayKills = isGameOver ? (lastRunStats?.enemiesKilled ?? getNbKilledEnnemies(player.killedEnnemies)) : getNbKilledEnnemies(player.killedEnnemies);
 
     if (gameTimeLabel) {
         gameTimeLabel.textContent = `Temps : ${formatDuration(displaySeconds)}`;
@@ -87,8 +88,14 @@ function formatDuration(totalSeconds: number) {
     return `${minutes}:${seconds}`;
 }
 
-function computeScore(survivalSeconds: number, killedEnemies: number) {
-    return survivalSeconds * 5 + killedEnemies * 100;
+function computeScore(survivalSeconds: number, killedEnemies: Map<number, number>) {
+    let scoreEnnemies = 0;
+    for(let i = 0; i < scoreAtDeath.length; i++) {
+        if(killedEnemies.has(i)) {
+            scoreEnnemies += scoreAtDeath[i] * killedEnemies.get(i)!;
+        }
+    }
+    return survivalSeconds * 5 + scoreEnnemies;
 }
 
 export function finalizeCurrentRun(saveScore: boolean) {
@@ -99,7 +106,7 @@ export function finalizeCurrentRun(saveScore: boolean) {
 
     const pseudo = player.pseudo?.trim().length ? player.pseudo : "Guest";
     const date = new Date().toISOString();
-    const enemiesKilled = player.killedEnnemies;
+    const enemiesKilled = getNbKilledEnnemies(player.killedEnnemies);
     const mode = isCoopMode ? 'coop' : 'solo';
 
     lastRunStats = {
@@ -122,4 +129,12 @@ export function finalizeCurrentRun(saveScore: boolean) {
         const payload: LeaderboardEntry = { pseudo, score: finalScore, date, mode };
         socket.emit("submitScore", payload);
     }
+}
+
+function getNbKilledEnnemies(killed: Map<number, number>):number {
+    let nb = 0;
+    killed.forEach((score) => {
+        nb += score;
+    });
+    return nb;
 }

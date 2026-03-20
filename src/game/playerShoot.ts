@@ -1,9 +1,9 @@
 export const canvas = document.querySelector<HTMLCanvasElement>('.game-canva')!,
 	context = canvas.getContext('2d')!;
 
-import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH, secondPlayer } from "./gameRendering";
-import { socket } from "../socket";
-import { isCoopMode } from "../main";
+import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH, secondPlayer } from "./gameRendering.ts";
+import { socket } from "../socket.ts";
+import { isCoopMode } from "../main.ts";
 
 export let bullet = new Image();
 bullet.src = "../../assets/bullet.png";

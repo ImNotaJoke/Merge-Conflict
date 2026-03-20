@@ -7,6 +7,8 @@ const leftCleanupLimit = -100;
 const initialSpawnIntervalMs = 4000;
 const minimumSpawnIntervalMs = 700;
 const spawnAccelerationMs = 100;
+const ENNEMI_RENDER_WIDTH = 64;
+const ENNEMI_RENDER_HEIGHT = 64;
 
 interface GameSession {
 	ennemies: Ennemi[];
@@ -47,7 +49,14 @@ function deleteSession(sessionId: string) {
 }
 
 function spawnEnnemi(session: GameSession, sessionId: string) {
-	const newEnnemi = new Ennemi(rightWall, Math.random() * arenaHeight, 25);
+	const random: number = Math.round(Math.random() * 100);
+	let health = 25, moveSpeed = 1, url = 0;
+	if(random < 25) {
+		health = 10;
+		moveSpeed = 5;
+		url = 1;
+	}
+	const newEnnemi = new Ennemi(rightWall + ENNEMI_RENDER_WIDTH, Math.random() * (arenaHeight - ENNEMI_RENDER_HEIGHT), health, moveSpeed, url);
 	session.ennemies.push(newEnnemi);
 	session.players.forEach(socketId => {
 		io.to(socketId).emit("ennemiEvent", session.ennemies);
@@ -74,8 +83,8 @@ export function hurtEnnemi(sessionId: string, index: number) {
 	if (index >= 0 && index < session.ennemies.length) {
 		session.ennemies[index].hurt();
 		if (session.ennemies[index].health <= 0) {
+			io.emit("newEnnemyKilled", session.ennemies[index].imageId);
 			removeEnnemi(sessionId, index);
-			io.emit("newEnnemyKilled")
 		}
 	}
 }
