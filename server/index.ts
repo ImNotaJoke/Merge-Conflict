@@ -261,10 +261,10 @@ io.on('connection', socket => {
 		}
 	});
 
-	socket.on("enemyHurt", (index: number) => {
+	socket.on("enemyHurt", (index: number, damage: number) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
-			hurtEnnemi(sessionId, index);
+			hurtEnnemi(sessionId, index,damage);
 		}
 	});
 

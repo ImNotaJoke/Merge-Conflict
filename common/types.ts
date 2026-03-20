@@ -122,12 +122,25 @@ export class Ennemi {
         console.log("Un ennemi a tiré");
     }
 
-    hurt() {
-        this.health--;
+    hurt(damage: number) {
+        this.health -= damage;
     }
+
 
     kill() {
         this.health = 0;
+    }
+}
+
+export class Bonus {
+    posX:number;
+    posY:number;
+    type:string;
+
+    constructor(posX:number, posY:number, type:string) {
+        this.posX = posX;
+        this.posY = posY;
+        this.type = type;
     }
 }
 

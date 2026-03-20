@@ -76,12 +76,12 @@ export function removeEnnemi(sessionId: string, index: number) {
 	}
 }
 
-export function hurtEnnemi(sessionId: string, index: number) {
+export function hurtEnnemi(sessionId: string, index: number, damage: number) {
 	const session = getSession(sessionId);
 	if (!session) return;
 
 	if (index >= 0 && index < session.ennemies.length) {
-		session.ennemies[index].hurt();
+		session.ennemies[index].hurt(damage);
 		if (session.ennemies[index].health <= 0) {
 			io.emit("newEnnemyKilled", session.ennemies[index].imageId);
 			removeEnnemi(sessionId, index);
