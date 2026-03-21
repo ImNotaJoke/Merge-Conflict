@@ -34,6 +34,7 @@ const ennemiImages = [new Image(), new Image()];
 let ennemies: Ennemi[] = [];
 let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
+const bonusTypes = ["attack", "speed", "invincibility"];
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
@@ -78,6 +79,9 @@ export function resetRenderedGameState() {
 	secondPlayer = null;
 	lastEmittedHealth = 3;
 	player.projectileDamage = 1;
+	player.shootSpeed = 10;
+	player.projectileSize = 5;
+	player.invincibility = false;
 	activeBonuses = [];
 	resetBullets();
 }
@@ -189,9 +193,30 @@ function drawBonuses() {
         context.drawImage(bonusImage, bonus.posX, bonus.posY, BONUS_ITEM_RENDER_WIDTH, BONUS_ITEM_RENDER_HEIGHT);
 
         if (bonus_is_colliding(bonus.posX, bonus.posY)) {
-            player.projectileDamage += 1;
-            console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
-            activeBonuses.splice(i, 1);
+			switch (bonus.type) {
+				case "attack":
+					player.projectileDamage += 15;
+            		console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
+					setTimeout(() => {
+                	player.projectileDamage = 1;
+            		}, 10000);
+					break;
+				case "speed":
+					player.shootSpeed += 15;
+            		console.log("Bonus ramassé ! Vitesse actuelle :", player.shootSpeed);
+					setTimeout(() => {
+                	player.shootSpeed = 10;
+            		}, 10000);
+					break;
+				case "invincibility":
+					player.invincibility = true;
+					console.log("Bonus ramassé ! Invincibilité activée pendant 5 secondes: ", player.invincibility);
+					setTimeout(() => {
+                	player.invincibility = false;
+            		}, 5000);
+					break;	
+			}
+            activeBonuses.splice(i, 1);	
         } 
         else if (bonus.posY > canvas.height) {
             activeBonuses.splice(i, 1);
@@ -230,7 +255,9 @@ function drawEnnemies() {
 				socket.emit("enemyKilled");
 				if(Math.random() <= BONUS_ITEM_CHANCES) {
 					console.log(`it worked !`);
-					activeBonuses.push(new Bonus(renderX, renderY, "attack"));
+					const randomBonusType = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
+					console.log(`Voici un bonus de type ${randomBonusType}`);
+					activeBonuses.push(new Bonus(renderX, renderY, randomBonusType));
 			}
 			}
 		}
