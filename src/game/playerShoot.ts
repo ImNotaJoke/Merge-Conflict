@@ -1,7 +1,7 @@
 export const canvas = document.querySelector<HTMLCanvasElement>('.game-canva')!,
 	context = canvas.getContext('2d')!;
 
-import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH, secondPlayer } from "./gameRendering.ts";
+import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH, secondPlayer, bullet_shot_sound } from "./gameRendering.ts";
 import { socket } from "../socket.ts";
 import { isCoopMode } from "../main.ts";
 

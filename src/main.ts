@@ -49,6 +49,11 @@ const leaderboardTable = document.querySelector('.leaderboard-section table tbod
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
 const pseudoInput = document.querySelector<HTMLInputElement>(".pseudo");
 const pseudoDisplay = document.querySelector(".pseudo-displayer");
+const bonusDisplay = document.querySelector(".game-stat-bonus");
+const attackBonusDisplay = document.querySelector(".attack_bonus");
+const speedBonusDisplay = document.querySelector(".speed_bonus");
+const invincibilityBonusDisplay = document.querySelector(".invincibility_bonus");
+let currentBonusTimeout: NodeJS.Timeout | null = null;
 
 initializeEventListeners();
 
@@ -313,4 +318,34 @@ export function menuSelection(menu: string) {
             console.error("Mauvais appel de menuSelection");
             break;
     }
+}
+
+export function bonusDisplayUpdate(bonusType: string) {
+
+    if (currentBonusTimeout) {
+        clearTimeout(currentBonusTimeout);
+    }
+
+    bonusDisplay?.classList.remove("hidden");
+    let duration = 10000;
+    
+    switch (bonusType) {
+        case "attack": 
+            attackBonusDisplay?.classList.remove("hidden"); 
+            break;
+        case "speed": 
+            speedBonusDisplay?.classList.remove("hidden"); 
+            break;
+        case "invincibility": 
+            invincibilityBonusDisplay?.classList.remove("hidden"); 
+            duration = 5000; 
+            break;
+    }
+
+    currentBonusTimeout = setTimeout(() => {
+        attackBonusDisplay?.classList.add("hidden");
+        speedBonusDisplay?.classList.add("hidden");
+        invincibilityBonusDisplay?.classList.add("hidden");
+        bonusDisplay?.classList.add("hidden");
+    }, duration);
 }

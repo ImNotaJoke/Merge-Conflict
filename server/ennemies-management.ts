@@ -83,8 +83,19 @@ export function hurtEnnemi(sessionId: string, index: number, damage: number) {
 	if (index >= 0 && index < session.ennemies.length) {
 		session.ennemies[index].hurt(damage);
 		if (session.ennemies[index].health <= 0) {
+			const ex = session.ennemies[index].posX;
+            const ey = session.ennemies[index].posY;
 			io.emit("newEnnemyKilled", session.ennemies[index].imageId);
 			removeEnnemi(sessionId, index);
+
+			if(Math.random() <= 0.35) {
+                const bonusTypes = ["attack", "speed", "invincibility"];
+                const type = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
+                
+                const bonusId = Math.random().toString(36).substring(2, 9);
+                
+                io.to(sessionId).emit("spawnBonus", { id: bonusId, posX: ex, posY: ey, type: type });
+			}
 		}
 	}
 }

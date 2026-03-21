@@ -133,11 +133,13 @@ export class Ennemi {
 }
 
 export class Bonus {
+    id: string;
     posX:number;
     posY:number;
     type:string;
 
-    constructor(posX:number, posY:number, type:string) {
+    constructor(id: string,posX:number, posY:number, type:string) {
+        this.id = id;
         this.posX = posX;
         this.posY = posY;
         this.type = type;

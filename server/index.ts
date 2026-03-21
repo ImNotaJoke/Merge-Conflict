@@ -286,4 +286,11 @@ io.on('connection', socket => {
 		const scores = await getSeparateLeaderboards();
 		ack?.(scores);
 	});
+
+	socket.on("collectBonus", (bonusId: string) => {
+		const sessionId = playerSessions.get(socket.id);
+		if (sessionId) {
+			io.to(sessionId).emit("removeBonus", bonusId);
+		}
+	});
 });
