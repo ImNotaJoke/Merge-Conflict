@@ -25,6 +25,11 @@ function bulletSpawn() {
         bx: player.posX + PLAYER_RENDER_WIDTH - BULLET_RENDER_WIDTH / 2,
         by: player.posY + PLAYER_RENDER_HEIGHT / 2 - BULLET_RENDER_HEIGHT / 2 + BULLET_VERTICAL_OFFSET,
     });
+    /*bullet_shot_sound.currentTime = 0;
+    bullet_shot_sound.play();
+    const sonClone = bullet_shot_sound.cloneNode(true) as HTMLAudioElement;
+    sonClone.volume = 0.3;
+    sonClone.play();*/
     // Emit bullet spawn to server for second player (only in coop mode)
     if (isCoopMode) {
         // Convert to server coordinates

@@ -28,6 +28,7 @@ const ennemy_hit_sound = new Audio('../../assets/sounds/bullet_hit.wav');
 const ennemy_death_sound = new Audio('../../assets/sounds/monster_death.wav');
 const player_hurt_sound = new Audio('../../assets/sounds/player_hurt.wav');
 export const bullet_shot_sound = new Audio('../../assets/sounds/bullet_shot.wav');
+const bonus_pickup_sound = new Audio('../../assets/sounds/bonus_pickup.wav');
  
 export const player: Player = new Player(0, 0);
 export const image = new Image();
@@ -80,8 +81,9 @@ socket.on("spawnBonus", (data: {id: string, posX: number, posY: number, type: st
     activeBonuses.push(new Bonus(data.id, data.posX, data.posY, data.type));
 });
 
-socket.on("removeBonus", (bonusId: string) => {
-    activeBonuses = activeBonuses.filter(b => b.id !== bonusId);
+socket.on("applyBonus", (data: {id: string, type: string}) => {
+    activeBonuses = activeBonuses.filter(b => b.id !== data.id);
+	bonus_type_effect_determination(data.type);
 });
 
 export function resetRenderedGameState() {
@@ -162,8 +164,6 @@ function bulletsAreColliding(posX: number, posY: number) {
 		const ennemiCenterY = posY + ENNEMI_RENDER_HEIGHT / 2;
 		const diffX = Math.abs(bulletCenterX - ennemiCenterX);
 		const diffY = Math.abs(bulletCenterY - ennemiCenterY);
-		bullet_shot_sound.currentTime = 0;
-		bullet_shot_sound.play();
 
 		if (diffX < (BULLET_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) / 2 &&
 			diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2) {
@@ -180,8 +180,6 @@ function bulletsAreColliding(posX: number, posY: number) {
 		const ennemiCenterY = posY + ENNEMI_RENDER_HEIGHT / 2;
 		const diffX = Math.abs(bulletCenterX - ennemiCenterX);
 		const diffY = Math.abs(bulletCenterY - ennemiCenterY);
-		bullet_shot_sound.currentTime = 0;
-		bullet_shot_sound.play();
 
 		if (diffX < (BULLET_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) / 2 &&
 			diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2) {
@@ -197,6 +195,38 @@ function bonus_is_colliding(posX:number, posY:number) {
 	const diffX = Math.abs(x - posX);
 	const diffY = Math.abs(y - posY);
 	return diffX < (PLAYER_RENDER_WIDTH / 2 + BONUS_ITEM_RENDER_WIDTH / 2) && diffY < (PLAYER_RENDER_HEIGHT / 2 + BONUS_ITEM_RENDER_HEIGHT / 2);
+}
+
+function bonus_type_effect_determination(type: string) {
+	switch (type) {
+				case "attack":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.projectileDamage = 15;
+					if (attackTimeout) clearTimeout(attackTimeout);
+            		console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
+					attackTimeout = setTimeout(() => { player.projectileDamage = 1; }, 10000);
+					break;
+				case "speed":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.shootSpeed = 25;
+					if (speedTimeout) clearTimeout(speedTimeout);
+            		console.log("Bonus ramassé ! Vitesse actuelle :", player.shootSpeed);
+					speedTimeout = setTimeout(() => { player.shootSpeed = 10; }, 10000);
+					break;
+				case "invincibility":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.invincibility = true;
+					if (invincibilityTimeout) clearTimeout(invincibilityTimeout);
+					console.log("Bonus ramassé ! Invincibilité activée pendant 5 secondes: ", player.invincibility);
+                	invincibilityTimeout = setTimeout(() => { player.invincibility = false; }, 5000);
+					break;	
+			}
 }
 
 
@@ -216,30 +246,7 @@ function drawBonuses() {
         context.drawImage(bonusImage, renderX, renderY, BONUS_ITEM_RENDER_WIDTH, BONUS_ITEM_RENDER_HEIGHT);
 
         if (bonus_is_colliding(renderX, renderY)) {
-			socket.emit("collectBonus", bonus.id);
-			switch (bonus.type) {
-				case "attack":
-					bonusDisplayUpdate(bonus.type);
-					player.projectileDamage = 15;
-					if (attackTimeout) clearTimeout(attackTimeout);
-            		console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
-					attackTimeout = setTimeout(() => { player.projectileDamage = 1; }, 10000);
-					break;
-				case "speed":
-					bonusDisplayUpdate(bonus.type);
-					player.shootSpeed = 25;
-					if (speedTimeout) clearTimeout(speedTimeout);
-            		console.log("Bonus ramassé ! Vitesse actuelle :", player.shootSpeed);
-					speedTimeout = setTimeout(() => { player.shootSpeed = 10; }, 10000);
-					break;
-				case "invincibility":
-					bonusDisplayUpdate(bonus.type);
-					player.invincibility = true;
-					if (invincibilityTimeout) clearTimeout(invincibilityTimeout);
-					console.log("Bonus ramassé ! Invincibilité activée pendant 5 secondes: ", player.invincibility);
-                	invincibilityTimeout = setTimeout(() => { player.invincibility = false; }, 5000);
-					break;	
-			}
+			socket.emit("collectBonus", { id: bonus.id, type: bonus.type });
             activeBonuses.splice(i, 1);	
         } 
         else if (bonus.posY > SERVER_ARENA_HEIGHT) {
@@ -264,6 +271,7 @@ function drawHearts() {
 function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
+
 
 	for (let i = ennemies.length - 1; i >= 0; i--) {
 		const ennemi = ennemies[i];

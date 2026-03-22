@@ -287,10 +287,10 @@ io.on('connection', socket => {
 		ack?.(scores);
 	});
 
-	socket.on("collectBonus", (bonusId: string) => {
+	socket.on("collectBonus", (data: { id: string, type: string }) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
-			io.to(sessionId).emit("removeBonus", bonusId);
+			io.to(sessionId).emit("applyBonus", data);
 		}
 	});
 });
