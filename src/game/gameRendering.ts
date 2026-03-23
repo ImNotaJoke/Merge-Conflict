@@ -275,7 +275,7 @@ function drawEnnemies() {
 
 	for (let i = ennemies.length - 1; i >= 0; i--) {
 		const ennemi = ennemies[i];
-		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
+		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX + ENNEMI_RENDER_WIDTH);
 		const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
 
 		if (bulletsAreColliding(renderX, renderY)) {

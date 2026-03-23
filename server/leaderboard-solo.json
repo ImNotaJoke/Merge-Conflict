@@ -24,6 +24,12 @@
     "mode": "solo"
   },
   {
+    "pseudo": "Guest",
+    "score": 4105,
+    "date": "2026-03-23T06:49:32.508Z",
+    "mode": "solo"
+  },
+  {
     "pseudo": "fu",
     "score": 1160,
     "date": "2026-03-21T13:36:02.481Z",
@@ -51,12 +57,6 @@
     "pseudo": "sululu",
     "score": 915,
     "date": "2026-03-16T20:35:06.623Z",
-    "mode": "solo"
-  },
-  {
-    "pseudo": "sululu",
-    "score": 915,
-    "date": "2026-03-16T20:35:06.624Z",
     "mode": "solo"
   }
 ]
