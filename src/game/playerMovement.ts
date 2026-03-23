@@ -13,8 +13,40 @@ let mouseTargetX: number | null = null,
 
 const KEYBOARD_MOVE_SPEED = 3;
 
-import { getInputMode } from "../Parameter";
-import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering";
+import { getInputMode } from "../Parameter.ts";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
+import { socket } from "../socket.ts";
+import { isCoopMode } from "../main.ts";
+
+// Server arena dimensions for coordinate conversion
+const SERVER_ARENA_WIDTH = 1980;
+const SERVER_ARENA_HEIGHT = 720;
+
+// Convert local canvas position to server coordinates
+function toServerCoords(localX: number, localY: number) {
+	const maxLocalX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 1);
+	const maxLocalY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 1);
+	return {
+		posX: (localX / maxLocalX) * SERVER_ARENA_WIDTH,
+		posY: (localY / maxLocalY) * SERVER_ARENA_HEIGHT
+	};
+}
+
+// Emit player position for coop mode
+function emitPlayerPosition() {
+	if (isCoopMode) {
+		const serverCoords = toServerCoords(x, y);
+		socket.emit("playerMove", serverCoords);
+	}
+}
+
+// Listen for position update requests (when a new player joins coop)
+socket.on("requestPositionUpdate", () => {
+	if (isCoopMode) {
+		const serverCoords = toServerCoords(x, y);
+		socket.emit("playerMove", serverCoords);
+	}
+});
 
 export function resetPlayerPosition() {
 	vx = 0;
@@ -55,6 +87,7 @@ function move() {
 		vx = 0;
 		vy = 0;
 		moveWithMouse();
+		emitPlayerPosition();
 		return;
 	}
 
@@ -66,6 +99,7 @@ function move() {
 	x += vx;
 	y += vy;
 	clampPosition();
+	emitPlayerPosition();
 }
 setInterval(move, 1000 / 60);
 

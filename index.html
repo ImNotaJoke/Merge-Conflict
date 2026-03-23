@@ -15,7 +15,7 @@
         </div>
     </section>
     <header>
-        <p id="settingsBtn" class="parameter-icon settingsBtn hidden"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></p>
+        <p class="parameter-icon settingsBtn hidden"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></p>
     </header>
     <section class="game-section hidden">
         <div class="game-content">
@@ -39,8 +39,23 @@
                     <div class="game-stat-item">
                         <p class="game-stat-label game-score-label">Score : 0</p>
                     </div>
+                    <!-- Barre de vie de l'allié (coop uniquement) -->
+                    <div class="game-stat-item ally-health-container hidden">
+                        <p class="game-stat-label">Allié : </p>
+                        <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
+                        <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
+                        <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
+                    </div>
+                    <div class="game-stat-bonus hidden"> 
+                        <img class="attack_bonus hidden" src="/assets/attack_up.png" alt="bonus_attaque" height="50px">
+                        <img class="speed_bonus hidden" src="/assets/speed_up.png" alt="bonus_vitesse" height="50px">
+                        <img class="invincibility_bonus hidden" src="/assets/invincibility_up.png" alt="bonus_invincibilité" height="50px">
+                    </div>
                 </div>
-                <button class="game-leave-btn">Quitter</button>
+                <div>
+                    <button class="settingsBtn gameSettings">Options</button>
+                    <button class="game-leave-btn">Quitter</button>
+                </div>
             </header>
             <main class="game-main">
                 <canvas class="game-canva" width="600" height="400"></canvas>
@@ -116,10 +131,17 @@
             <article class="glassmorphism">
                 <h3 class="credit-title">Médias</h3>
                 <ul class="credit-content">
-                    <li>Vidéo de fond du menu principal : https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1</li>
-                    <li>Vidéo de fond du jeu: https://www.youtube.com/watch?v=KYYYJlmHFsY</li>
-                    <li>Vidéo du Game Over : https://www.youtube.com/watch?v=E-yQhjGHxPY</li>
+                    <li>Vidéo de fond du menu principal : <a href="https://www.youtube.com/watch?v=U4lz8MN6MQA&list=RDU4lz8MN6MQA&start_radio=1">Youtube</a></li>
+                    <li>Vidéo de fond du jeu: <a href="https://www.youtube.com/watch?v=KYYYJlmHFsY">Youtube</a></li>
+                    <li>Vidéo du Game Over : <a href="https://www.youtube.com/watch?v=E-yQhjGHxPY">Youtube</a></li>
+                    <li>Image de fond du starter : <a href="https://preview.redd.it/doom-slayer-and-isabelle-doom-eternal-and-animal-crossing-v0-tyzxrbd2l6u41.png?width=1080&crop=smart&auto=webp&s=8b9bd1da3473d9746e5b2319b9aff37519dab770">Reddit</a></li>
                 </ul>
+            </article>
+            <article class="glassmorphism">
+                <h3 class="credit-title">Behind the scenes</h3>
+                <p class="credit-content">
+                    Bientôt : Une vidéo BTS du développement du jeu . . .
+                </p>
             </article>
             <button class="back-btn">Retour</button>
         </div>
@@ -151,6 +173,42 @@
                 </table>
             </article>
             <button class="back-btn">Retour</button>
+        </div>
+    </section>
+    <!-- Menu Coop: choix héberger/rejoindre -->
+    <section class="coop-menu-section hidden">
+        <div class="coop-menu-main">
+            <h1>Mode Coopératif</h1>
+            <div class="coop-buttons">
+                <button class="game-btn coop-host-btn">Héberger une partie</button>
+                <button class="game-btn coop-join-btn">Rejoindre une partie</button>
+            </div>
+            <button class="back-btn coop-back-btn">Retour</button>
+        </div>
+    </section>
+    <!-- Salle d'attente pour l'hôte -->
+    <section class="waiting-room-section hidden">
+        <div class="waiting-room-main">
+            <h1>En attente d'un joueur...</h1>
+            <div class="glassmorphism waiting-info">
+                <p class="waiting-room-id">Room: <span class="room-id-display">---</span></p>
+                <div class="loader"></div>
+                <p class="waiting-status">En attente d'un coéquipier...</p>
+            </div>
+            <button class="back-btn cancel-room-btn">Annuler</button>
+        </div>
+    </section>
+    <!-- Liste des rooms disponibles -->
+    <section class="room-list-section hidden">
+        <div class="room-list-main">
+            <h1>Parties disponibles</h1>
+            <article class="glassmorphism rooms-container">
+                <div class="rooms-list">
+                    <p class="no-rooms-msg">Aucune partie disponible...</p>
+                </div>
+                <button class="refresh-rooms-btn">Actualiser</button>
+            </article>
+            <button class="back-btn rooms-back-btn">Retour</button>
         </div>
     </section>
 </body>

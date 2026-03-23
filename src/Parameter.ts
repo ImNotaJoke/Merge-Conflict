@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: GameSettings = {
 
 const video = document.getElementById("bgVideo") as HTMLVideoElement | null;
 const volumeSlider = document.getElementById("volumeControl") as HTMLInputElement | null;
-const settingsBtn = document.getElementById("settingsBtn") as HTMLElement | null;
+const settingsBtn = document.querySelectorAll(".settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel") as HTMLDivElement | null;
 const inputKeyboard = document.getElementById("inputKeyboard") as HTMLInputElement | null;
 const inputMouse = document.getElementById("inputMouse") as HTMLInputElement | null;
@@ -116,7 +116,9 @@ export function initializeEventListeners(): void {
     applySettingsToMedia(appliedSettings);
 
     if (settingsBtn) {
-        settingsBtn.addEventListener("click", openSettingsPanel);
+        settingsBtn.forEach((btn) => {
+            btn.addEventListener('click', openSettingsPanel);
+        });
     }
 
     if (volumeSlider) {
