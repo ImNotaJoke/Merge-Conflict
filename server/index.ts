@@ -261,10 +261,10 @@ io.on('connection', socket => {
 		}
 	});
 
-	socket.on("enemyHurt", (index: number) => {
+	socket.on("enemyHurt", (index: number, damage: number) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
-			hurtEnnemi(sessionId, index);
+			hurtEnnemi(sessionId, index,damage);
 		}
 	});
 
@@ -285,5 +285,12 @@ io.on('connection', socket => {
 	socket.on("getLeaderboard", async (ack?: (scores: { solo: LeaderboardEntry[]; coop: LeaderboardEntry[] }) => void) => {
 		const scores = await getSeparateLeaderboards();
 		ack?.(scores);
+	});
+
+	socket.on("collectBonus", (data: { id: string, type: string }) => {
+		const sessionId = playerSessions.get(socket.id);
+		if (sessionId) {
+			io.to(sessionId).emit("applyBonus", data);
+		}
 	});
 });

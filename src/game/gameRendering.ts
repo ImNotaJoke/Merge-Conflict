@@ -1,4 +1,4 @@
-import { Ennemi, Player, SecondPlayer, type SecondPlayerData } from "../../common/types.ts";
+import { Ennemi,Bonus, Player, SecondPlayer, type SecondPlayerData } from "../../common/types.ts";
 import { canvas, context, x, y } from "./playerMovement.ts";
 import {
 	activeBullets,
@@ -10,7 +10,7 @@ import {
 	resetBullets,
 } from "./playerShoot.ts";
 import { socket } from "../socket.ts";
-import { menuSelection, isCoopMode, currentRoomId } from "../main.ts";
+import { menuSelection, isCoopMode, currentRoomId, bonusDisplayUpdate } from "../main.ts";
 
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
@@ -18,18 +18,34 @@ const ENNEMI_RENDER_WIDTH = 64;
 const ENNEMI_RENDER_HEIGHT = 64;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
+const BONUS_ITEM_RENDER_WIDTH = 32;
+const BONUS_ITEM_RENDER_HEIGHT = 32;
+
 
 const hearts = document.querySelectorAll(".game-stat-heart:not(.ally-heart)");
 
+const ennemy_hit_sound = new Audio('../../assets/sounds/bullet_hit.wav');
+const ennemy_death_sound = new Audio('../../assets/sounds/monster_death.wav');
+const player_hurt_sound = new Audio('../../assets/sounds/player_hurt.wav');
+export const bullet_shot_sound = new Audio('../../assets/sounds/bullet_shot.wav');
+const bonus_pickup_sound = new Audio('../../assets/sounds/bonus_pickup.wav');
+ 
 export const player: Player = new Player(0, 0);
 export const image = new Image();
+export const bonusImage = new Image();
 const ennemiImages = [new Image(), new Image()];
 let ennemies: Ennemi[] = [];
+let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
+let attackTimeout: NodeJS.Timeout | null = null;
+let speedTimeout: NodeJS.Timeout | null = null;
+let invincibilityTimeout: NodeJS.Timeout | null = null;
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
 secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
+bonusImage.src = '../../assets/power_up.png';
+
 
 image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
 ennemiImages[0].src = '../../assets/character/ennemi/mob1/mob1.png';
@@ -61,12 +77,26 @@ socket.on("secondPlayerDisconnect", (socketId: string) => {
 	}
 });
 
+socket.on("spawnBonus", (data: {id: string, posX: number, posY: number, type: string}) => {
+    activeBonuses.push(new Bonus(data.id, data.posX, data.posY, data.type));
+});
+
+socket.on("applyBonus", (data: {id: string, type: string}) => {
+    activeBonuses = activeBonuses.filter(b => b.id !== data.id);
+	bonus_type_effect_determination(data.type);
+});
+
 export function resetRenderedGameState() {
 	ennemies = [];
 	player.health = 3;
 	player.killedEnnemies = new Map();
 	secondPlayer = null;
 	lastEmittedHealth = 3;
+	player.projectileDamage = 1;
+	player.shootSpeed = 10;
+	player.projectileSize = 5;
+	player.invincibility = false;
+	activeBonuses = [];
 	resetBullets();
 }
 
@@ -93,6 +123,7 @@ function render() {
 	player.posX = x;
 	player.posY = y;
 	drawEnnemies();
+	drawBonuses();
 	drawHearts();
 	drawSecondPlayer();
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
@@ -160,6 +191,71 @@ function bulletsAreColliding(posX: number, posY: number) {
 	return false;
 }
 
+function bonus_is_colliding(posX:number, posY:number) {
+	const diffX = Math.abs(x - posX);
+	const diffY = Math.abs(y - posY);
+	return diffX < (PLAYER_RENDER_WIDTH / 2 + BONUS_ITEM_RENDER_WIDTH / 2) && diffY < (PLAYER_RENDER_HEIGHT / 2 + BONUS_ITEM_RENDER_HEIGHT / 2);
+}
+
+function bonus_type_effect_determination(type: string) {
+	switch (type) {
+				case "attack":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.projectileDamage = 15;
+					if (attackTimeout) clearTimeout(attackTimeout);
+            		console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
+					attackTimeout = setTimeout(() => { player.projectileDamage = 1; }, 10000);
+					break;
+				case "speed":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.shootSpeed = 25;
+					if (speedTimeout) clearTimeout(speedTimeout);
+            		console.log("Bonus ramassé ! Vitesse actuelle :", player.shootSpeed);
+					speedTimeout = setTimeout(() => { player.shootSpeed = 10; }, 10000);
+					break;
+				case "invincibility":
+					bonusDisplayUpdate(type);
+					bonus_pickup_sound.currentTime = 0;
+					bonus_pickup_sound.play();
+					player.invincibility = true;
+					if (invincibilityTimeout) clearTimeout(invincibilityTimeout);
+					console.log("Bonus ramassé ! Invincibilité activée pendant 5 secondes: ", player.invincibility);
+                	invincibilityTimeout = setTimeout(() => { player.invincibility = false; }, 5000);
+					break;	
+			}
+}
+
+
+function drawBonuses() {
+	const maxBonusRenderX = Math.max(canvas.width - BONUS_ITEM_RENDER_WIDTH, 0);
+    const maxBonusRenderY = Math.max(canvas.height - BONUS_ITEM_RENDER_HEIGHT, 0);
+	
+
+    for (let i = activeBonuses.length - 1; i >= 0; i--) {
+        const bonus = activeBonuses[i];
+        
+        bonus.posY += 0.25; 
+
+		const renderX = Math.min((bonus.posX / SERVER_ARENA_WIDTH) * maxBonusRenderX, maxBonusRenderX);
+        const renderY = Math.min((bonus.posY / SERVER_ARENA_HEIGHT) * maxBonusRenderY, maxBonusRenderY);
+
+        context.drawImage(bonusImage, renderX, renderY, BONUS_ITEM_RENDER_WIDTH, BONUS_ITEM_RENDER_HEIGHT);
+
+        if (bonus_is_colliding(renderX, renderY)) {
+			socket.emit("collectBonus", { id: bonus.id, type: bonus.type });
+            activeBonuses.splice(i, 1);	
+        } 
+        else if (bonus.posY > SERVER_ARENA_HEIGHT) {
+            activeBonuses.splice(i, 1);
+        }
+    }
+}
+
+
 function drawHearts() {
 	for (let i = 0; i < hearts.length; i++) {
 		if (i < player.health) {
@@ -176,19 +272,27 @@ function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
 
+
 	for (let i = ennemies.length - 1; i >= 0; i--) {
 		const ennemi = ennemies[i];
 		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
 		const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
 
 		if (bulletsAreColliding(renderX, renderY)) {
-			socket.emit("enemyHurt", i);
+			socket.emit("enemyHurt", i, player.projectileDamage);
+			ennemi.health -= player.projectileDamage;
+			ennemy_hit_sound.currentTime = 0;
+			ennemy_hit_sound.play();
 			if (ennemi.health <= 0) {
 				socket.emit("enemyKilled");
+				ennemy_death_sound.currentTime = 0;
+				ennemy_death_sound.play();
 			}
 		}
 
 		if (player.health > 0 && areColliding(renderX, renderY)) {
+			player_hurt_sound.currentTime = 0;
+			player_hurt_sound.play();
 			player.takeHealth();
 			emitHealthUpdate();
 			if (!player.verifyHealth()) {
@@ -196,6 +300,11 @@ function drawEnnemies() {
 					socket.emit("playerDied");
 				}
 				menuSelection("over");
+				ennemy_hit_sound.pause();
+				ennemy_death_sound.pause();
+				player_hurt_sound.pause();
+				bullet_shot_sound.pause();
+				resetRenderedGameState();
 			}
 		}
 
