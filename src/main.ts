@@ -72,6 +72,7 @@ soloButton?.addEventListener('click', (event) => {
     event.preventDefault();
     setCoopMode(false);
     setCurrentRoomId(null);
+    player.isHost = true;
     startNewGame();
     menuSelection("game");
     if (pseudoInput?.value && pseudoInput.value.length > 0) {
@@ -87,6 +88,7 @@ coopButton?.addEventListener('click', (event) => {
 
 coopHostBtn?.addEventListener('click', (event) => {
     event.preventDefault();
+    player.isHost = true;
     const pseudo = pseudoInput?.value || "Guest";
     socket.emit("createRoom", { pseudo }, (result: { success: boolean; roomId?: string }) => {
         if (result.success && result.roomId) {
@@ -164,7 +166,10 @@ function joinRoom(roomId: string) {
         if (!result.success) {
             alert(result.error || "Impossible de rejoindre la room");
             refreshRoomsList();
+            return;
         }
+
+        player.isHost = false;
     });
 }
 
