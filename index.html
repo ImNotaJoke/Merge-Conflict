@@ -23,9 +23,8 @@
                 <div class="game-stats">
                     <div class="game-stat-item">
                         <p class="game-stat-label">Vie : </p>
-                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
-                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
-                        <img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">
+                        <div class="health-container">
+                        </div>
                     </div>
                     <div class="game-stat-item">
                         <p class="game-stat-label pseudo-displayer">Joueur : </p>
@@ -42,8 +41,6 @@
                     <!-- Barre de vie de l'allié (coop uniquement) -->
                     <div class="game-stat-item ally-health-container hidden">
                         <p class="game-stat-label">Allié : </p>
-                        <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
-                        <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
                         <img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">
                     </div>
                     <div class="game-stat-bonus hidden"> 
@@ -96,6 +93,11 @@
         
         <div class="button-container">
             <input type="text" class="pseudo" placeholder="Entrez votre pseudo...">
+            <select name="difficulty" class="difficulty-select">
+                <option value="0">EASY</option>
+                <option value="1">MEDIUM</option>
+                <option value="2">HARD</option>
+            </select>
             <div class="button-row">
                 <button type="submit" class="game-btn solo">Solo</button>
                 <button type="submit" class="game-btn coop">Coop</button>
