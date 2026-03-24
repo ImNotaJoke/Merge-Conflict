@@ -290,11 +290,13 @@ function drawEnnemies() {
 			}
 		}
 
-		if (player.health > 0 && areColliding(renderX, renderY)) {
+		if (areColliding(renderX, renderY)) {
 			player_hurt_sound.currentTime = 0;
 			player_hurt_sound.play();
 			player.takeHealth();
 			emitHealthUpdate();
+			ennemies.splice(i, 1);
+			socket.emit("enemyKilled", i);
 			if (!player.verifyHealth()) {
 				if (isCoopMode && currentRoomId) {
 					socket.emit("playerDied");
