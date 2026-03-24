@@ -53,7 +53,10 @@ const bonusDisplay = document.querySelector(".game-stat-bonus");
 const attackBonusDisplay = document.querySelector(".attack_bonus");
 const speedBonusDisplay = document.querySelector(".speed_bonus");
 const invincibilityBonusDisplay = document.querySelector(".invincibility_bonus");
-let currentBonusTimeout: NodeJS.Timeout | null = null;
+//let currentBonusTimeout: NodeJS.Timeout | null = null;
+let currentAttackTimeout: NodeJS.Timeout | null = null;
+let currentSpeedTimeout: NodeJS.Timeout | null = null;
+let currentInvincibilityTimeout: NodeJS.Timeout | null = null;
 
 initializeEventListeners();
 
@@ -322,30 +325,53 @@ export function menuSelection(menu: string) {
 
 export function bonusDisplayUpdate(bonusType: string) {
 
-    if (currentBonusTimeout) {
-        clearTimeout(currentBonusTimeout);
-    }
-
     bonusDisplay?.classList.remove("hidden");
-    let duration = 10000;
     
     switch (bonusType) {
         case "attack": 
-            attackBonusDisplay?.classList.remove("hidden"); 
+            attackDisplayUpdate(); 
             break;
         case "speed": 
-            speedBonusDisplay?.classList.remove("hidden"); 
+            speedDisplayUpdate();
             break;
         case "invincibility": 
-            invincibilityBonusDisplay?.classList.remove("hidden"); 
-            duration = 5000; 
+            invincibilityDisplayUpdate();
             break;
     }
+}
 
-    currentBonusTimeout = setTimeout(() => {
+function attackDisplayUpdate() {
+    if (currentAttackTimeout) {
+        clearTimeout(currentAttackTimeout);
+    }
+    attackBonusDisplay?.classList.remove("hidden");
+    let duration = 10000;
+
+    currentAttackTimeout = setTimeout(() => {
         attackBonusDisplay?.classList.add("hidden");
+    }, duration);
+}
+
+function speedDisplayUpdate() {
+    if (currentSpeedTimeout) {
+        clearTimeout(currentSpeedTimeout);
+    }
+    speedBonusDisplay?.classList.remove("hidden");
+    let duration = 10000;
+
+    currentSpeedTimeout = setTimeout(() => {
         speedBonusDisplay?.classList.add("hidden");
+    }, duration);
+}
+
+function invincibilityDisplayUpdate() {
+    if (currentInvincibilityTimeout) {
+        clearTimeout(currentInvincibilityTimeout);
+    }
+    invincibilityBonusDisplay?.classList.remove("hidden");
+    let duration = 5000;
+
+    currentInvincibilityTimeout = setTimeout(() => {
         invincibilityBonusDisplay?.classList.add("hidden");
-        bonusDisplay?.classList.add("hidden");
     }, duration);
 }

@@ -230,6 +230,8 @@ function bonus_type_effect_determination(type: string) {
 }
 
 
+
+
 function drawBonuses() {
 	const maxBonusRenderX = Math.max(canvas.width - BONUS_ITEM_RENDER_WIDTH, 0);
     const maxBonusRenderY = Math.max(canvas.height - BONUS_ITEM_RENDER_HEIGHT, 0);
