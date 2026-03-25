@@ -16,6 +16,8 @@ export function setCurrentRoomId(roomId: string | null) {
     currentRoomId = roomId;
 }
 
+
+// Récupération des éléments de la page web
 const creditsform = document.querySelector(".credits-form");
 const backBtn = document.querySelectorAll(".back-btn:not(.coop-back-btn):not(.cancel-room-btn):not(.rooms-back-btn)");
 const starterBtn = document.querySelector(".starter-btn");
@@ -53,7 +55,10 @@ const bonusDisplay = document.querySelector(".game-stat-bonus");
 const attackBonusDisplay = document.querySelector(".attack_bonus");
 const speedBonusDisplay = document.querySelector(".speed_bonus");
 const invincibilityBonusDisplay = document.querySelector(".invincibility_bonus");
+const difficultySelect = document.querySelector(".difficulty-select") as HTMLSelectElement;
+
 let currentBonusTimeout: NodeJS.Timeout | null = null;
+export let difficulty: number = 0;
 
 initializeEventListeners();
 
@@ -89,6 +94,18 @@ soloButton?.addEventListener('click', (event) => {
 coopButton?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("coop-menu");
+});
+
+difficultySelect.addEventListener('change', (event) => {
+    event.preventDefault();
+    difficulty = parseInt(difficultySelect.value);
+    const options = difficultySelect.querySelectorAll("option");
+    options[difficulty].setAttribute("selected", "");
+    for(let i = 0; i < options.length; i++) {
+        if(i != difficulty) {
+            options[i].removeAttribute("selected");
+        }
+    }
 });
 
 coopHostBtn?.addEventListener('click', (event) => {

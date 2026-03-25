@@ -11,6 +11,7 @@ import {
 } from "./playerShoot.ts";
 import { socket } from "../socket.ts";
 import { menuSelection, isCoopMode, currentRoomId, bonusDisplayUpdate } from "../main.ts";
+import { updateHealth } from "./runManagement.ts";
 
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
@@ -20,9 +21,6 @@ const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
 const BONUS_ITEM_RENDER_WIDTH = 32;
 const BONUS_ITEM_RENDER_HEIGHT = 32;
-
-
-const hearts = document.querySelectorAll(".game-stat-heart:not(.ally-heart)");
 
 const ennemy_hit_sound = new Audio('../../assets/sounds/bullet_hit.wav');
 const ennemy_death_sound = new Audio('../../assets/sounds/monster_death.wav');
@@ -139,7 +137,6 @@ function render() {
 	player.posY = y;
 	drawEnnemies();
 	drawBonuses();
-	drawHearts();
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	drawPlayerLabel(player.posX, player.posY, "VOUS");
 	drawSecondPlayer();
@@ -288,19 +285,6 @@ function drawBonuses() {
     }
 }
 
-
-function drawHearts() {
-	for (let i = 0; i < hearts.length; i++) {
-		if (i < player.health) {
-			hearts[i].setAttribute("src", "/assets/HeartIcon.png");
-			hearts[i].setAttribute("alt", "coeur de vie plein");
-		} else {
-			hearts[i].setAttribute("src", "/assets/HeartIconEmpty.png");
-			hearts[i].setAttribute("alt", "coeur de vie vide");
-		}
-	}
-}
-
 function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
@@ -323,11 +307,14 @@ function drawEnnemies() {
 			}
 		}
 
-		if (player.health > 0 && areColliding(renderX, renderY)) {
+		if (areColliding(renderX, renderY)) {
 			player_hurt_sound.currentTime = 0;
 			player_hurt_sound.play();
 			player.takeHealth();
+			updateHealth();
 			emitHealthUpdate();
+			ennemies.splice(i, 1);
+			socket.emit("enemyKilled", i);
 			if (!player.verifyHealth()) {
 				if (isCoopMode && currentRoomId) {
 					socket.emit("playerDied");
