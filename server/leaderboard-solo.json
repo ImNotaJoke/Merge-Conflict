@@ -1,5 +1,11 @@
 [
   {
+    "pseudo": "Guest",
+    "score": 45670,
+    "date": "2026-03-26T08:35:13.093Z",
+    "mode": "solo"
+  },
+  {
     "pseudo": "boboer",
     "score": 11050,
     "date": "2026-03-21T10:59:45.582Z",
@@ -42,27 +48,15 @@
     "mode": "solo"
   },
   {
-    "pseudo": "lel",
-    "score": 955,
-    "date": "2026-03-21T13:54:23.566Z",
-    "mode": "solo"
-  },
-  {
     "pseudo": "sululu",
     "score": 1110,
     "date": "2026-03-19T07:52:04.414Z",
     "mode": "solo"
   },
   {
-    "pseudo": "sululu",
-    "score": 915,
-    "date": "2026-03-16T20:35:06.607Z",
-    "mode": "solo"
-  },
-  {
-    "pseudo": "sululu",
-    "score": 915,
-    "date": "2026-03-16T20:35:06.623Z",
+    "pseudo": "lel",
+    "score": 955,
+    "date": "2026-03-21T13:54:23.566Z",
     "mode": "solo"
   }
 ]

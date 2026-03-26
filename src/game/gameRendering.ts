@@ -35,9 +35,6 @@ const ennemiImages = [new Image(), new Image()];
 let ennemies: Ennemi[] = [];
 let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
-let attackTimeout: NodeJS.Timeout | null = null;
-let speedTimeout: NodeJS.Timeout | null = null;
-let invincibilityTimeout: NodeJS.Timeout | null = null;
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
@@ -229,34 +226,28 @@ function bonus_is_colliding(posX:number, posY:number) {
 
 function bonus_type_effect_determination(type: string) {
 	switch (type) {
-				case "attack":
-					bonusDisplayUpdate(type);
-					bonus_pickup_sound.currentTime = 0;
-					bonus_pickup_sound.play();
-					player.projectileDamage = 15;
-					if (attackTimeout) clearTimeout(attackTimeout);
-            		console.log("Bonus ramassé ! Dégâts actuels :", player.projectileDamage);
-					attackTimeout = setTimeout(() => { player.projectileDamage = 1; }, 10000);
-					break;
-				case "speed":
-					bonusDisplayUpdate(type);
-					bonus_pickup_sound.currentTime = 0;
-					bonus_pickup_sound.play();
-					player.shootSpeed = 25;
-					if (speedTimeout) clearTimeout(speedTimeout);
-            		console.log("Bonus ramassé ! Vitesse actuelle :", player.shootSpeed);
-					speedTimeout = setTimeout(() => { player.shootSpeed = 10; }, 10000);
-					break;
-				case "invincibility":
-					bonusDisplayUpdate(type);
-					bonus_pickup_sound.currentTime = 0;
-					bonus_pickup_sound.play();
-					player.invincibility = true;
-					if (invincibilityTimeout) clearTimeout(invincibilityTimeout);
-					console.log("Bonus ramassé ! Invincibilité activée pendant 5 secondes: ", player.invincibility);
-                	invincibilityTimeout = setTimeout(() => { player.invincibility = false; }, 5000);
-					break;	
-			}
+		case "attack":
+			bonusDisplayUpdate(type);
+			bonus_pickup_sound.currentTime = 0;
+			bonus_pickup_sound.play();
+			player.projectileDamage *= 2;
+			setTimeout(() => { player.projectileDamage = player.projectileDamage / 2; }, 10000);
+			break;
+		case "speed":
+			bonusDisplayUpdate(type);
+			bonus_pickup_sound.currentTime = 0;
+			bonus_pickup_sound.play();
+			player.shootSpeed = 25;
+			setTimeout(() => { player.shootSpeed = 10; }, 10000);
+			break;
+		case "invincibility":
+			bonusDisplayUpdate(type);
+			bonus_pickup_sound.currentTime = 0;
+			bonus_pickup_sound.play();
+			player.invincibility = true;
+			setTimeout(() => { player.invincibility = false; }, 5000);
+			break;	
+	}
 }
 
 

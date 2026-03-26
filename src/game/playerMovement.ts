@@ -11,8 +11,8 @@ export let x: number = 0,
 let mouseTargetX: number | null = null,
  mouseTargetY: number | null = null;
 
-const MAX_SPEED = 10;
-const MAX_MOUSE_SPEED = 3;
+const MAX_SPEED = 15;
+const MAX_MOUSE_SPEED = 4;
 const movingKeys = {
 	"up": false,
 	"down": false,
