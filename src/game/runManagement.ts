@@ -20,7 +20,7 @@ let lastRunStats: GameRunStats | undefined;
 let isGameOver = false;
 let finalScore = 0;
 let finalSurvivalSeconds = 0;
-let maxHealth = 3;
+export let maxHealth = 3;
 
 export function getLastRunStats() {
     return lastRunStats;

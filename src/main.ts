@@ -3,7 +3,7 @@ import { initializeEventListeners } from "./Parameter.ts";
 import { loadLeaderboard, renderLeaderboard } from "./leaderboard.ts";
 import { player } from "./game/gameRendering.ts";
 import { socket } from "./socket.ts";
-import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer } from "./game/runManagement.ts";
+import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer, maxHealth } from "./game/runManagement.ts";
 
 export let isCoopMode = false;
 export let currentRoomId: string | null = null;
@@ -41,7 +41,7 @@ const roomIdDisplay = document.querySelector(".room-id-display");
 const roomsList = document.querySelector(".rooms-list");
 const noRoomsMsg = document.querySelector(".no-rooms-msg");
 const allyHealthContainer = document.querySelector(".ally-health-container");
-const allyHearts = document.querySelectorAll(".ally-heart");
+const allyHearts = document.querySelector(".ally-hearts")!;
 const soloButton = document.querySelector(".game-btn.solo");
 const coopButton = document.querySelector(".game-btn.coop");
 const overBackButton = document.querySelector(".rejouer-back");
@@ -213,13 +213,9 @@ socket.on("roomReady", (data: { roomId: string }) => {
         player.setPseudo(pseudoInput?.value);
     }
     updatePseudoDisplay();
-
-    allyHearts.forEach((heart) => {
-        heart.setAttribute("src", "/assets/HeartIcon.png");
-        heart.setAttribute("alt", "coeur allié plein");
-    });
     allyHealthContainer?.classList.remove("hidden");
     startNewGame();
+    updateAllyHealth(maxHealth);
     menuSelection("game");
 });
 
@@ -239,15 +235,14 @@ socket.on("newEnnemyKilled", (id:number) => {
 })
 
 function updateAllyHealth(health: number) {
-    allyHearts.forEach((heart, i) => {
-        if (i < health) {
-            heart.setAttribute("src", "/assets/HeartIcon.png");
-            heart.setAttribute("alt", "coeur allié plein");
-        } else {
-            heart.setAttribute("src", "/assets/HeartIconEmpty.png");
-            heart.setAttribute("alt", "coeur allié vide");
-        }
-    });
+    let html = "";
+    for(let i = 0; i < health; i++) {
+        html += `<img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">`;
+    }
+    for(let i = 0; i < maxHealth - health; i++) {
+        html += `<img class="game-stat-heart ally-heart" src="/assets/HeartIconEmpty.png" alt="coeur allié vide" height="50px">`;
+    }
+    allyHearts.innerHTML = html;
 }
 
 overBackButton?.addEventListener('click', (event) => {
