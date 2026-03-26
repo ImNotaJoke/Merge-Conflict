@@ -3,7 +3,8 @@ import { resetRenderedGameState } from "./gameRendering.ts";
 import { resetPlayerPosition } from "./playerMovement.ts";
 import { socket } from "../socket.ts";
 import { player } from "./gameRendering.ts";
-import { isCoopMode, difficulty } from "../main.ts";
+import { difficulty } from "../main.ts";
+import { isCoopMode } from "../gameState.ts";
 
 const gameTimeLabel = document.querySelector(".game-time-label");
 const gameKillsLabel = document.querySelector(".game-kills-label");

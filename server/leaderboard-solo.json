@@ -19,6 +19,12 @@
   },
   {
     "pseudo": "Guest",
+    "score": 9175,
+    "date": "2026-03-26T21:04:54.850Z",
+    "mode": "solo"
+  },
+  {
+    "pseudo": "Guest",
     "score": 6490,
     "date": "2026-03-20T07:46:02.431Z",
     "mode": "solo"
@@ -36,6 +42,12 @@
     "mode": "solo"
   },
   {
+    "pseudo": "Guest",
+    "score": 2885,
+    "date": "2026-03-26T21:24:19.049Z",
+    "mode": "solo"
+  },
+  {
     "pseudo": "fu",
     "score": 1160,
     "date": "2026-03-21T13:36:02.481Z",
@@ -45,18 +57,6 @@
     "pseudo": "Guest",
     "score": 1120,
     "date": "2026-03-16T20:49:54.599Z",
-    "mode": "solo"
-  },
-  {
-    "pseudo": "sululu",
-    "score": 1110,
-    "date": "2026-03-19T07:52:04.414Z",
-    "mode": "solo"
-  },
-  {
-    "pseudo": "lel",
-    "score": 955,
-    "date": "2026-03-21T13:54:23.566Z",
     "mode": "solo"
   }
 ]

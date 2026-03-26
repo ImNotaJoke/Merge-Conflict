@@ -25,7 +25,7 @@ const FRICTION = 0.85;
 import { getInputMode } from "../Parameter.ts";
 import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
 import { socket } from "../socket.ts";
-import { isCoopMode } from "../main.ts";
+import { isCoopMode } from "../gameState.ts";
 
 // Server arena dimensions for coordinate conversion
 const SERVER_ARENA_WIDTH = 1980;

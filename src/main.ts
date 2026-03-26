@@ -4,17 +4,7 @@ import { loadLeaderboard, renderLeaderboard } from "./leaderboard.ts";
 import { player } from "./game/gameRendering.ts";
 import { socket } from "./socket.ts";
 import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer, maxHealth } from "./game/runManagement.ts";
-
-export let isCoopMode = false;
-export let currentRoomId: string | null = null;
-
-export function setCoopMode(value: boolean) {
-    isCoopMode = value;
-}
-
-export function setCurrentRoomId(roomId: string | null) {
-    currentRoomId = roomId;
-}
+import { isCoopMode, currentRoomId, setCoopMode, setCurrentRoomId } from "./gameState.ts";
 
 
 // Récupération des éléments de la page web

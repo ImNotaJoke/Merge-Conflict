@@ -3,7 +3,7 @@ export const canvas = document.querySelector<HTMLCanvasElement>('.game-canva')!,
 
 import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRendering.ts";
 import { socket } from "../socket.ts";
-import { isCoopMode } from "../main.ts";
+import { isCoopMode } from "../gameState.ts";
 
 export let bullet = new Image();
 bullet.src = "../../assets/bullet.png";
@@ -19,6 +19,7 @@ export let xb: number = 0,
 
 export const activeBullets: { bx: number, by: number }[] = [];
 export const secondPlayerBullets: { bx: number, by: number }[] = [];
+export const enemyBullets: { bx: number, by: number }[] = [];
 
 function bulletSpawn() {
     activeBullets.push({
@@ -54,30 +55,27 @@ socket.on("secondPlayerShoot", (data: { posX: number; posY: number; socketId: st
     });
 });
 
-export function updateBullets() {
-    for (let i = 0; i < activeBullets.length; i++) {
-        activeBullets[i].bx += player.shootSpeed;
+function updateBulletArray(bulletsArray: { bx: number, by: number }[], speed: number, direction: 1 | -1) {
+    for (let i = 0; i < bulletsArray.length; i++) {
+        bulletsArray[i].bx += speed * direction;
         
-        // On supprime la balle si elle sort de l'écran
-        if (activeBullets[i].bx > canvas.width + 100) {
-            activeBullets.splice(i, 1);
-            i--;
-        }
-    }
-    // Update second player bullets
-    for (let i = 0; i < secondPlayerBullets.length; i++) {
-        secondPlayerBullets[i].bx += player.shootSpeed;
-        
-        if (secondPlayerBullets[i].bx > canvas.width + 100) {
-            secondPlayerBullets.splice(i, 1);
+        // On supprime la balle si elle sort de l'écran pour les players ( à droite ) et pour les ennemis ( à gauche )
+        if (bulletsArray[i].bx > canvas.width + 100 || bulletsArray[i].bx < -100) {
+            bulletsArray.splice(i, 1);
             i--;
         }
     }
 }
 
+export function updateBullets() {
+    updateBulletArray(activeBullets, player.shootSpeed, 1);
+    updateBulletArray(secondPlayerBullets, player.shootSpeed, 1);
+    updateBulletArray(enemyBullets, 7, -1); 
+}
 export function resetBullets() {
     activeBullets.length = 0;
     secondPlayerBullets.length = 0;
+    enemyBullets.length = 0;
 }
 
 setTimeout(() => {

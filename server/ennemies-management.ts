@@ -52,7 +52,7 @@ function spawnEnnemi(session: GameSession, sessionId: string) {
 	const random: number = Math.round(Math.random() * 100);
 	let health = 25, moveSpeed = 1, url = 0;
 	let shootSpeed, projectileDamage, projectileSize;
-	let newEnnemi:Ennemi;
+	let newEnnemi = new Ennemi(rightWall + ENNEMI_RENDER_WIDTH, Math.random() * (arenaHeight - ENNEMI_RENDER_HEIGHT), health, moveSpeed, url);
 	if(random < 25) {
 		health = 10;
 		moveSpeed = 5;
@@ -67,7 +67,6 @@ function spawnEnnemi(session: GameSession, sessionId: string) {
 		url = 2;
 		newEnnemi = new Ennemi(rightWall + ENNEMI_RENDER_WIDTH, Math.random() * (arenaHeight - ENNEMI_RENDER_HEIGHT), health, moveSpeed, url, shootSpeed, projectileSize, projectileDamage);
 	}
-	newEnnemi = new Ennemi(rightWall + ENNEMI_RENDER_WIDTH, Math.random() * (arenaHeight - ENNEMI_RENDER_HEIGHT), health, moveSpeed, url);
 	session.ennemies.push(newEnnemi);
 	session.players.forEach(socketId => {
 		io.to(socketId).emit("ennemiEvent", session.ennemies);
@@ -144,6 +143,12 @@ function autoMoveAll() {
 		session.ennemies.forEach((ennemi) => {
 			if (ennemi.posX > leftCleanupLimit) {
 				ennemi.move();
+
+				if (ennemi.shootSpeed && Math.random() < (ennemi.shootSpeed * 0.1)) {
+					session.players.forEach(socketId => {
+						io.to(socketId).emit("enemyShoot", { posX: ennemi.posX, posY: ennemi.posY });
+					});
+				}
 			}
 		});
 
