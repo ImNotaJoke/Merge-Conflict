@@ -23,7 +23,7 @@ const ACCELERATION = 0.5;
 const FRICTION = 0.85;
 
 import { getInputMode } from "../Parameter.ts";
-import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
+import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
 import { socket } from "../socket.ts";
 import { isCoopMode } from "../main.ts";
 
@@ -45,7 +45,10 @@ function toServerCoords(localX: number, localY: number) {
 function emitPlayerPosition() {
 	if (isCoopMode) {
 		const serverCoords = toServerCoords(x, y);
-		socket.emit("playerMove", serverCoords);
+		const newX = serverCoords.posX;
+		const newY = serverCoords.posY
+		const model = player.models[0]
+		socket.emit("playerMove", {newX, newY, model} );
 	}
 }
 
@@ -53,7 +56,10 @@ function emitPlayerPosition() {
 socket.on("requestPositionUpdate", () => {
 	if (isCoopMode) {
 		const serverCoords = toServerCoords(x, y);
-		socket.emit("playerMove", serverCoords);
+		const newX = serverCoords.posX;
+		const newY = serverCoords.posY
+		const model = player.models[0]
+		socket.emit("playerMove", {newX, newY, model} );
 	}
 });
 

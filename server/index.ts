@@ -200,7 +200,7 @@ io.on('connection', socket => {
 		rooms.delete(roomId);
 	});
 
-	socket.on("startPlaying", (data: { isCoop: boolean; roomId?: string }) => {
+	socket.on("startPlaying", (data: { isCoop: boolean; roomId?: string; modelId: string }) => {
 		const isCoop = data?.isCoop ?? false;
 		const sessionId = isCoop && data.roomId ? data.roomId : socket.id;
 
@@ -216,7 +216,8 @@ io.on('connection', socket => {
 			socket.to(sessionId).emit("secondPlayerUpdate", {
 				posX: 0,
 				posY: 0,
-				socketId: socket.id
+				socketId: socket.id,
+				modelId: data.modelId
 			});
 			socket.to(sessionId).emit("requestPositionUpdate");
 		}
@@ -231,14 +232,15 @@ io.on('connection', socket => {
 		}
 	});
 
-	socket.on("playerMove", (data: { posX: number; posY: number }) => {
+	socket.on("playerMove", (data: { posX: number; posY: number; modelId: string }) => {
 		playerPositions.set(socket.id, data);
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId && sessionId !== socket.id) {
 			socket.to(sessionId).emit("secondPlayerUpdate", {
 				posX: data.posX,
 				posY: data.posY,
-				socketId: socket.id
+				socketId: socket.id,
+				modelId: data.modelId
 			});
 		}
 	});

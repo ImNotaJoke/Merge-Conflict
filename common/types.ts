@@ -151,6 +151,7 @@ export interface SecondPlayerData {
     posX: number;
     posY: number;
     socketId: string;
+    modelId: string;
 }
 
 export class SecondPlayer {
@@ -159,10 +160,11 @@ export class SecondPlayer {
     socketId: string;
     model: HTMLImageElement | null = null;
 
-    constructor(posX: number, posY: number, socketId: string) {
+    constructor(posX: number, posY: number, socketId: string, model:HTMLImageElement) {
         this.posX = posX;
         this.posY = posY;
         this.socketId = socketId;
+        this.model = model;
     }
 
     updatePosition(posX: number, posY: number) {

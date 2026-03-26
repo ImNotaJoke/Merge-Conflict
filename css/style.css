@@ -260,7 +260,7 @@ footer {
   align-items: center;
 }
 
-.credits, .back-btn, .rejouer-back, .starter-btn, .game-leave-btn, .gameSettings, .difficulty-select {
+.credits, .back-btn, .rejouer-back, .starter-btn, .game-leave-btn, .gameSettings, .difficulty-select, .skin-select {
   padding: 12px 30px;
   border: none;
   border-radius: 20px;
@@ -279,18 +279,28 @@ footer {
   width: 30vw;
   z-index: 1;
 }
-.credits:hover, .back-btn:hover, .rejouer-back:hover, .starter-btn:hover, .game-leave-btn:hover, .gameSettings:hover, .difficulty-select:hover {
+.credits:hover, .back-btn:hover, .rejouer-back:hover, .starter-btn:hover, .game-leave-btn:hover, .gameSettings:hover, .difficulty-select:hover, .skin-select:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
-.difficulty-select {
+.difficulty-select, .skin-select {
   width: 100%;
 }
 
-.difficulty-select option {
+.difficulty-select option, .skin-select option {
   color: black;
+}
+
+label {
+  width: 100%;
+  text-align: left;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.select-container {
+  width: 100%;
 }
 
 .credits-main, .leaderboard-main {

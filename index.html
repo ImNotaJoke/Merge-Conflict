@@ -93,11 +93,22 @@
         
         <div class="button-container">
             <input type="text" class="pseudo" placeholder="Entrez votre pseudo...">
-            <select name="difficulty" class="difficulty-select">
-                <option value="0">EASY</option>
-                <option value="1">MEDIUM</option>
-                <option value="2">HARD</option>
-            </select>
+            <div class="select-container">
+                <label>Difficulté : </label>
+                <select name="difficulty" class="difficulty-select">
+                    <option value="0">EASY</option>
+                    <option value="1">MEDIUM</option>
+                    <option value="2">HARD</option>
+                </select>
+            </div>
+            <div class="select-container">
+                <label>Votre skin : </label>
+                <select name="skin" class="skin-select">
+                    <option value="doomguy">DoomGuy</option>
+                    <option value="isa-lega" selected>Marie (legacy)</option>
+                    <option value="isa-red">Marie rouge</option>
+                </select>
+            </div>
             <div class="button-row">
                 <button type="submit" class="game-btn solo">Solo</button>
                 <button type="submit" class="game-btn coop">Coop</button>

@@ -213,7 +213,6 @@ socket.on("roomReady", (data: { roomId: string }) => {
         player.setPseudo(pseudoInput?.value);
     }
     updatePseudoDisplay();
-    allyHealthContainer?.classList.remove("hidden");
     startNewGame();
     updateAllyHealth(maxHealth);
     menuSelection("game");
@@ -314,7 +313,9 @@ export function menuSelection(menu: string) {
             settingsBtn[1]?.classList.remove("hidden");
             video?.setAttribute("src", "assets/DoomAmbience.mp4");
             startGameTimer();
-            socket.emit("startPlaying", { isCoop: isCoopMode, roomId: currentRoomId });
+            const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
+            const modelId = skinSelect.value;
+            socket.emit("startPlaying", { isCoop: isCoopMode, roomId: currentRoomId, modelId });
             break;
         case "coop-menu":
             coopMenuSection.classList.remove("hidden");

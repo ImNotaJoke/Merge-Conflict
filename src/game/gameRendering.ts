@@ -13,6 +13,8 @@ import { socket } from "../socket.ts";
 import { menuSelection, isCoopMode, currentRoomId, bonusDisplayUpdate } from "../main.ts";
 import { updateHealth } from "./runManagement.ts";
 
+const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
+
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
 const ENNEMI_RENDER_WIDTH = 64;
@@ -29,7 +31,7 @@ export const bullet_shot_sound = new Audio('../../assets/sounds/bullet_shot.wav'
 const bonus_pickup_sound = new Audio('../../assets/sounds/bonus_pickup.wav');
  
 export const player: Player = new Player(0, 0);
-export const image = new Image();
+const image = new Map<string, HTMLImageElement>();
 export const bonusImage = new Image();
 const ennemiImages = [new Image(), new Image()];
 let ennemies: Ennemi[] = [];
@@ -37,31 +39,26 @@ let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
 
 export let secondPlayer: SecondPlayer | null = null;
-const secondPlayerImage = new Image();
 
-function refreshPlayerModels() {
-	const playerSkinPath = player.isHost
-		? '../../assets/character/isabelle/RIGHT/mtr1.png'
-		: '../../assets/character/doomGuy/DoomGuy.png';
-	const secondPlayerSkinPath = player.isHost
-		? '/assets/character/doomGuy/DoomGuy.png'
-		: '/assets/character/isabelle/RIGHT/mtr1.png';
-
-	image.src = playerSkinPath;
-	secondPlayerImage.src = secondPlayerSkinPath;
-}
-
-refreshPlayerModels();
-secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
 bonusImage.src = '../../assets/power_up.png';
 
+image.set("isa-lega", new Image());
+image.set("doomguy", new Image());
+image.set("isa-red", new Image());
 
-image.src = '../../assets/character/isabelle/RIGHT/mtr1.png';
+image.get("isa-lega")!.src = '/assets/character/isabelle/RIGHT/mtr1.png';
+image.get("isa-red")!.src = '/assets/character/isabelle/RIGHT/mtr1.png';
+image.get('doomguy')!.src = '/assets/character/doomGuy/DoomGuy.png';
 ennemiImages[0].src = '../../assets/character/ennemi/mob1/mob1.png';
 ennemiImages[1].src = '../../assets/character/ennemi/mob1/mob12.png';
-player.models.push(image);
+player.models.push(image.get(skinSelect.value)!);
 player.models[0].addEventListener('load', () => {
 	requestAnimationFrame(render);
+});
+
+skinSelect.addEventListener('change', (event) => {
+	event.preventDefault();
+	player.models[0] = image.get(skinSelect.value)!;
 });
 
 socket.on("ennemiEvent", (updatedEnnemies: Ennemi[]) => {
@@ -73,8 +70,7 @@ socket.on("secondPlayerUpdate", (data: SecondPlayerData) => {
 	if (data.socketId === socket.id) return;
 
 	if (!secondPlayer) {
-		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId);
-		secondPlayer.setModel(secondPlayerImage);
+		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId, image.get(data.modelId)!);
 	} else {
 		secondPlayer.updatePosition(data.posX, data.posY);
 	}
@@ -101,7 +97,6 @@ export function resetRenderedGameState() {
 	player.killedEnnemies = new Map();
 	secondPlayer = null;
 	lastEmittedHealth = 3;
-	refreshPlayerModels();
 	player.projectileDamage = 1;
 	player.shootSpeed = 10;
 	player.projectileSize = 5;
@@ -148,7 +143,6 @@ function render() {
 		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
 		context.globalAlpha = 1.0;
 	});
-
 	requestAnimationFrame(render);
 }
 
@@ -337,3 +331,5 @@ function resampleCanvas() {
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
 }
+
+skinSelect
