@@ -35,7 +35,7 @@ function generateRoomId(): string {
 	return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-function createMultiplayerPlayer(socketId: string, pseudo: string, isHost: boolean, skinIndex: number = 0): MultiplayerPlayerData {
+function createMultiplayerPlayer(socketId: string, pseudo: string, isHost: boolean, skinIndex: string = "isa-lega"): MultiplayerPlayerData {
 	return {
 		socketId,
 		pseudo,
@@ -403,9 +403,9 @@ io.on('connection', socket => {
 		}
 	});
 
-	socket.on("createMultiRoom", (data: { pseudo: string; config: MultiplayerRoomConfig; skinIndex?: number }, ack?: (result: { success: boolean; roomId?: string }) => void) => {
+	socket.on("createMultiRoom", (data: { pseudo: string; config: MultiplayerRoomConfig; skinIndex?: string }, ack?: (result: { success: boolean; roomId?: string }) => void) => {
 		const roomId = generateRoomId();
-		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Host", true, data.skinIndex || 0);
+		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Host", true, data.skinIndex || "isa-lega");
 
 		const room: MultiplayerRoomData = {
 			id: roomId,
@@ -444,8 +444,9 @@ io.on('connection', socket => {
 		ack?.(availableRooms);
 	});
 
-	socket.on("joinMultiRoom", (data: { roomId: string; pseudo: string; skinIndex?: number }, ack?: (result: { success: boolean; error?: string; players?: MultiplayerPlayerData[]; config?: MultiplayerRoomConfig }) => void) => {
+	socket.on("joinMultiRoom", (data: { roomId: string; pseudo: string; skinIndex: string }, ack?: (result: { success: boolean; error?: string; players?: MultiplayerPlayerData[]; config?: MultiplayerRoomConfig }) => void) => {
 		const room = multiRooms.get(data.roomId);
+		console.log("[" + data.roomId + "]" + data.pseudo + " : " + data.skinIndex);
 		if (!room) {
 			ack?.({ success: false, error: "Room introuvable" });
 			return;
@@ -483,7 +484,7 @@ io.on('connection', socket => {
 			return;
 		}
 
-		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Player", false, data.skinIndex || 0);
+		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Player", false, data.skinIndex || "isa-lega");
 		room.players.set(socket.id, player);
 		multiPlayerRooms.set(socket.id, data.roomId);
 		socket.join(data.roomId);

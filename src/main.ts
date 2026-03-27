@@ -104,6 +104,7 @@ const multiBackMenuBtn = document.querySelector(".multi-back-menu-btn");
 const multiLeaderboardBody = document.querySelector(".multi-leaderboard-body");
 const multiAlliesContainer = document.querySelector(".multi-allies-container");
 const multiAlliesList = document.querySelector(".multi-allies-list");
+const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
 
 let currentAttackTimeout: NodeJS.Timeout | null = null;
 let currentSpeedTimeout: NodeJS.Timeout | null = null;
@@ -187,8 +188,8 @@ multiCreateBtn?.addEventListener('click', (event) => {
         difficulty: parseInt(multiDifficultySelect.value),
         maxPlayers: parseInt(multiMaxPlayersSelect.value),
     };
-
-    socket.emit("createMultiRoom", { pseudo, config }, (result: { success: boolean; roomId?: string }) => {
+    const skinIndex = skinSelect.value;
+    socket.emit("createMultiRoom", { pseudo, config, skinIndex }, (result: { success: boolean; roomId?: string }) => {
         if (result.success && result.roomId) {
             setCurrentRoomId(result.roomId);
             multiplayerConfig = config;
@@ -272,7 +273,8 @@ function refreshMultiRoomsList() {
 
 function joinMultiRoom(roomId: string) {
     const pseudo = pseudoInput?.value || "Player";
-    socket.emit("joinMultiRoom", { roomId, pseudo }, (result: { success: boolean; error?: string; players?: MultiplayerPlayerData[]; config?: MultiplayerRoomConfig }) => {
+    const skinIndex = skinSelect.value;
+    socket.emit("joinMultiRoom", { roomId, pseudo, skinIndex }, (result: { success: boolean; error?: string; players?: MultiplayerPlayerData[]; config?: MultiplayerRoomConfig }) => {
         if (!result.success) {
             alert(result.error || "Impossible de rejoindre");
             refreshMultiRoomsList();

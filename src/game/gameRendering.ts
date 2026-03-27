@@ -264,8 +264,7 @@ function drawMultiplayerPlayers() {
 		const renderX = Math.min((p.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
 		const renderY = Math.min((p.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
 
-		const skinImg = multiPlayerImages[p.skinIndex % multiPlayerImages.length];
-
+		const skinImg = image.get(p.skinIndex)!;
 		if (p.status === 'spectator') {
 			context.globalAlpha = 0.3;
 			context.filter = 'grayscale(100%)';

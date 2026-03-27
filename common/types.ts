@@ -204,7 +204,7 @@ export interface MultiplayerPlayerData {
     killedEnemies: Record<number, number>;
     survivalSeconds: number;
     isHost: boolean;
-    skinIndex: number;
+    skinIndex: string;
 }
 
 export interface MultiplayerRoomConfig {
