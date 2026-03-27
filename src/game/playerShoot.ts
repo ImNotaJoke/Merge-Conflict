@@ -106,7 +106,7 @@ function updateBulletArray(bulletsArray: { bx: number, by: number }[], speed: nu
         bulletsArray[i].bx += speed * direction;
         
         // On supprime la balle si elle sort de l'écran
-        if (activeBullets[i].bx > canvas.width + 100) {
+        if (activeBullets[i] && activeBullets[i].bx > canvas.width + 100) {
             activeBullets.splice(i, 1);
             i--;
         }

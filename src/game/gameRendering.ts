@@ -326,39 +326,41 @@ function bulletsAreColliding(posX: number, posY: number) {
 function checkEnemyBulletsCollision() {
     for (let i = enemyBullets.length - 1; i >= 0; i--) {
         const balle = enemyBullets[i];
-        
-        const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
-        const bulletCenterY = balle.by + BULLET_RENDER_HEIGHT / 2;
-        const playerCenterX = player.posX + PLAYER_RENDER_WIDTH / 2;
-        const playerCenterY = player.posY + PLAYER_RENDER_HEIGHT / 2;
-        
-        const diffX = Math.abs(bulletCenterX - playerCenterX);
-        const diffY = Math.abs(bulletCenterY - playerCenterY);
-        
-        
-        if (diffX < (BULLET_RENDER_WIDTH + PLAYER_RENDER_WIDTH) / 2 &&
-            diffY < (BULLET_RENDER_HEIGHT + PLAYER_RENDER_HEIGHT) / 2) {
-            
-            enemyBullets.splice(i, 1); 
-            
-            if (player.health > 0) {
-                player_hurt_sound.currentTime = 0;
-                player_hurt_sound.play();
-                player.takeHealth();
-                updateHealth();
-                emitHealthUpdate();
-                
-                if (!player.verifyHealth()) {
-                    if (isCoopMode && currentRoomId) socket.emit("playerDied");
-                    menuSelection("over");
-                    ennemy_hit_sound.pause();
-                    ennemy_death_sound.pause();
-                    player_hurt_sound.pause();
-                    bullet_shot_sound.pause();
-                    resetRenderedGameState();
-                }
-            }
-        }
+		if(balle) {
+			
+			const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
+			const bulletCenterY = balle.by + BULLET_RENDER_HEIGHT / 2;
+			const playerCenterX = player.posX + PLAYER_RENDER_WIDTH / 2;
+			const playerCenterY = player.posY + PLAYER_RENDER_HEIGHT / 2;
+			
+			const diffX = Math.abs(bulletCenterX - playerCenterX);
+			const diffY = Math.abs(bulletCenterY - playerCenterY);
+			
+			
+			if (diffX < (BULLET_RENDER_WIDTH + PLAYER_RENDER_WIDTH) / 2 &&
+				diffY < (BULLET_RENDER_HEIGHT + PLAYER_RENDER_HEIGHT) / 2) {
+				
+				enemyBullets.splice(i, 1); 
+				
+				if (player.health > 0) {
+					player_hurt_sound.currentTime = 0;
+					player_hurt_sound.play();
+					player.takeHealth();
+					updateHealth();
+					emitHealthUpdate();
+					
+					if (!player.verifyHealth()) {
+						if (isCoopMode && currentRoomId) socket.emit("playerDied");
+						menuSelection("over");
+						pauseAudio(ennemy_death_sound);
+						pauseAudio(ennemy_hit_sound);
+						pauseAudio(player_hurt_sound);
+						pauseAudio(bullet_shot_sound);
+						resetRenderedGameState();
+					}
+				}
+			}
+		}
     }
 }
 
@@ -485,18 +487,18 @@ function drawEnnemies() {
 				} else if (isCoopMode && currentRoomId) {
 					socket.emit("playerDied");
 					menuSelection("over");
-					ennemy_hit_sound.pause();
-					ennemy_death_sound.pause();
-					player_hurt_sound.pause();
-					bullet_shot_sound.pause();
+					pauseAudio(ennemy_death_sound);
+					pauseAudio(ennemy_hit_sound);
+					pauseAudio(player_hurt_sound);
+					pauseAudio(bullet_shot_sound);
 					resetRenderedGameState();
 					return;
 				} else {
 					menuSelection("over");
-					ennemy_hit_sound.pause();
-					ennemy_death_sound.pause();
-					player_hurt_sound.pause();
-					bullet_shot_sound.pause();
+					pauseAudio(ennemy_death_sound);
+					pauseAudio(ennemy_hit_sound);
+					pauseAudio(player_hurt_sound);
+					pauseAudio(bullet_shot_sound);
 					resetRenderedGameState();
 					return;
 				}
@@ -519,4 +521,13 @@ function resampleCanvas() {
 	if (canvas.clientWidth === 0 || canvas.clientHeight === 0) return;
 	canvas.width = canvas.clientWidth;
 	canvas.height = canvas.clientHeight;
+}
+
+function pauseAudio(audio: HTMLAudioElement) {
+	let audioPlaying = audio.play();
+	if(audioPlaying !== undefined) {
+		audioPlaying.then(_ => {
+			audio.pause();
+		})
+	}
 }

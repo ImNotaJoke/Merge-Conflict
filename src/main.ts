@@ -75,13 +75,6 @@ const attackBonusDisplay = document.querySelector(".attack_bonus");
 const speedBonusDisplay = document.querySelector(".speed_bonus");
 const invincibilityBonusDisplay = document.querySelector(".invincibility_bonus");
 const difficultySelect = document.querySelector(".difficulty-select") as HTMLSelectElement;
-
-let currentAttackTimeout: NodeJS.Timeout | null = null;
-let currentSpeedTimeout: NodeJS.Timeout | null = null;
-let currentInvincibilityTimeout: NodeJS.Timeout | null = null;
-
-export let difficulty: number = 0;
-
 const multiButton = document.querySelector(".game-btn.multi");
 const multiMenuSection = document.querySelector(".multi-menu-section")!;
 const multiConfigSection = document.querySelector(".multi-config-section")!;
@@ -112,9 +105,22 @@ const multiLeaderboardBody = document.querySelector(".multi-leaderboard-body");
 const multiAlliesContainer = document.querySelector(".multi-allies-container");
 const multiAlliesList = document.querySelector(".multi-allies-list");
 
+let currentAttackTimeout: NodeJS.Timeout | null = null;
+let currentSpeedTimeout: NodeJS.Timeout | null = null;
+let currentInvincibilityTimeout: NodeJS.Timeout | null = null;
+
+export let difficulty: number = 0;
+let videoPlaying = video.play();
+
 initializeEventListeners();
 
-video?.pause();
+export function pauseVideo() {
+    if(videoPlaying !== undefined) {
+        videoPlaying.then(_ => {
+            video.pause();
+        })
+    }
+}
 
 creditsform?.addEventListener('submit', (event) => {
     event.preventDefault();

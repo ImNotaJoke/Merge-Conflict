@@ -131,6 +131,7 @@ export function getInputMode(): InputMode {
 }
 
 export function initializeEventListeners(): void {
+    appliedSettings = loadSettings();
     syncControlsFromSettings(appliedSettings);
     applySettingsToMedia(appliedSettings);
 

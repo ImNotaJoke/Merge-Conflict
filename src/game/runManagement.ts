@@ -19,6 +19,7 @@ const DEFAULT_HEALTH = 3;
 
 let gameTimer: ReturnType<typeof setInterval> | undefined;
 let gameStartTimeMs = 0;
+let audioPlaying = audio.play();
 let lastRunStats: GameRunStats | undefined;
 let isGameOver = false;
 let finalScore = 0;
@@ -38,7 +39,7 @@ export function resetCurrentGame() {
     finalScore = 0;
     finalSurvivalSeconds = 0;
     updateInGameStats(0);
-    audio.pause();
+    pauseAudio();
     socket.emit("stopPlaying");
 }
 
@@ -89,6 +90,14 @@ export function stopGameTimer() {
     if (gameTimer) {
         clearInterval(gameTimer);
         gameTimer = undefined;
+    }
+}
+
+function pauseAudio() {
+    if(audioPlaying !== undefined) {
+        audioPlaying.then(_ => {
+            audio.pause();
+        })
     }
 }
 
@@ -178,3 +187,5 @@ function getNbKilledEnnemies(killed: Map<number, number>):number {
     });
     return nb;
 }
+
+pauseAudio();
