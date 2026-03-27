@@ -420,7 +420,8 @@ function escapeHtml(text: string): string {
 
 function joinRoom(roomId: string) {
     const pseudo = pseudoInput?.value || "Invité";
-    socket.emit("joinRoom", { roomId, pseudo }, (result: { success: boolean; error?: string }) => {
+    const skinIndex = skinSelect.value;
+    socket.emit("joinRoom", { roomId, pseudo, skinIndex }, (result: { success: boolean; error?: string }) => {
         if (!result.success) {
             alert(result.error || "Impossible de rejoindre la room");
             refreshRoomsList();
@@ -766,10 +767,12 @@ export function menuSelection(menu: string) {
             settingsBtn[1]?.classList.remove("hidden");
             video?.setAttribute("src", "assets/DoomAmbience.mp4");
             startGameTimer();
+            const skinIndex = skinSelect.value;
             socket.emit("startPlaying", {
                 isCoop: isCoopMode,
                 roomId: currentRoomId,
                 difficulty,
+                skinIndex
             });
             break;
         case "coop-menu":

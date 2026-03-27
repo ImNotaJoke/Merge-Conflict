@@ -242,21 +242,17 @@ export class SecondPlayer {
     posX: number;
     posY: number;
     socketId: string;
-    model: HTMLImageElement | null = null;
+    skinId: string;
 
-    constructor(posX: number, posY: number, socketId: string, model:HTMLImageElement) {
+    constructor(posX: number, posY: number, socketId: string, skinId:string) {
         this.posX = posX;
         this.posY = posY;
         this.socketId = socketId;
-        this.model = model;
+        this.skinId = skinId;
     }
 
     updatePosition(posX: number, posY: number) {
         this.posX = posX;
         this.posY = posY;
-    }
-
-    setModel(image: HTMLImageElement) {
-        this.model = image;
     }
 }

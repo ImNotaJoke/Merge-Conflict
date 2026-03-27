@@ -20,8 +20,10 @@ interface RoomData {
 	id: string;
 	hostId: string;
 	hostPseudo: string;
+	hostSkin: string;
 	guestId?: string;
 	guestPseudo?: string;
+	guestSkin?: string;
 	status: 'waiting' | 'playing' | 'ended';
 }
 
@@ -186,12 +188,13 @@ io.on('connection', socket => {
 		console.log(`Déconnexion du client ${socket.id}`);
 	});
 
-	socket.on("createRoom", (data: { pseudo: string }, ack?: (result: { success: boolean; roomId?: string }) => void) => {
+	socket.on("createRoom", (data: { pseudo: string, skinIndex: string }, ack?: (result: { success: boolean; roomId?: string }) => void) => {
 		const roomId = generateRoomId();
 		const room: RoomData = {
 			id: roomId,
 			hostId: socket.id,
 			hostPseudo: data.pseudo || "Guest",
+			hostSkin: data.skinIndex || "isa-lega",
 			status: 'waiting',
 		};
 		rooms.set(roomId, room);
@@ -211,7 +214,7 @@ io.on('connection', socket => {
 		ack?.(availableRooms);
 	});
 
-	socket.on("joinRoom", (data: { roomId: string; pseudo: string }, ack?: (result: { success: boolean; error?: string; hostPseudo?: string }) => void) => {
+	socket.on("joinRoom", (data: { roomId: string; pseudo: string; skinIndex: string }, ack?: (result: { success: boolean; error?: string; hostPseudo?: string }) => void) => {
 		const room = rooms.get(data.roomId);
 		if (!room) {
 			ack?.({ success: false, error: "Room introuvable" });
@@ -228,6 +231,7 @@ io.on('connection', socket => {
 
 		room.guestId = socket.id;
 		room.guestPseudo = data.pseudo || "Invité";
+		room.guestSkin = data.skinIndex || "isa-lega";
 		room.status = 'playing';
 		playerRooms.set(socket.id, data.roomId);
 		socket.join(data.roomId);
@@ -307,7 +311,7 @@ io.on('connection', socket => {
 		rooms.delete(roomId);
 	});
 
-	socket.on("startPlaying", (data: { isCoop: boolean; roomId?: string; difficulty?: number }) => {
+	socket.on("startPlaying", (data: { isCoop: boolean; roomId?: string; difficulty?: number; skinIndex?: string }) => {
 		const isCoop = data?.isCoop ?? false;
 		const difficulty = Number.isFinite(data?.difficulty) ? Number(data.difficulty) : 0;
 		const sessionId = isCoop && data.roomId ? data.roomId : socket.id;
@@ -324,7 +328,8 @@ io.on('connection', socket => {
 			socket.to(sessionId).emit("secondPlayerUpdate", {
 				posX: 0,
 				posY: 0,
-				socketId: socket.id
+				socketId: socket.id,
+				skinId: data.skinIndex
 			});
 			socket.to(sessionId).emit("requestPositionUpdate");
 		}

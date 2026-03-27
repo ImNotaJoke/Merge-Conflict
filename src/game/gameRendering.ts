@@ -111,7 +111,7 @@ socket.on("secondPlayerUpdate", (data: SecondPlayerData) => {
 	if (data.socketId === socket.id) return;
 
 	if (!secondPlayer) {
-		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId, image.get(data.modelId)!);
+		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId, data.modelId || 'isa-lega');
 	} else {
 		secondPlayer.updatePosition(data.posX, data.posY);
 	}
@@ -240,7 +240,9 @@ function drawPlayerLabel(renderX: number, renderY: number, label: string) {
 }
 
 function drawSecondPlayer() {
-	if (!secondPlayer || !secondPlayer.model || !secondPlayer.model.complete) return;
+	if (!secondPlayer) return;
+
+	console.log("je suis là");
 
 	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
@@ -248,7 +250,7 @@ function drawSecondPlayer() {
 	const renderY = Math.min((secondPlayer.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
 
 	context.globalAlpha = 0.8;
-	context.drawImage(secondPlayer.model, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	context.drawImage(image.get(secondPlayer.skinId)!, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	context.globalAlpha = 1.0;
 	drawPlayerLabel(renderX, renderY, "J2");
 }
