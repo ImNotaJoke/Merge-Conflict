@@ -283,10 +283,11 @@ function joinMultiRoom(roomId: string) {
             if (multiDifficultyDisplay) multiDifficultyDisplay.textContent = ["EASY", "MEDIUM", "HARD"][result.config.difficulty];
             if (multiMaxDisplay) multiMaxDisplay.textContent = result.config.maxPlayers.toString();
         }
-        updateMultiPlayersList();
         menuSelection("multi-lobby");
     });
 }
+
+socket.on('multiPlayerDisconnected', updateMultiPlayersList);
 
 function updateMultiPlayersList() {
     if (!multiPlayersUl) return;
