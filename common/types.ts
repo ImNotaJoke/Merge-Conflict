@@ -191,6 +191,53 @@ export interface SecondPlayerData {
     modelId: string;
 }
 
+export type MultiplayerPlayerStatus = 'waiting' | 'playing' | 'spectator' | 'disconnected';
+
+export interface MultiplayerPlayerData {
+    socketId: string;
+    pseudo: string;
+    status: MultiplayerPlayerStatus;
+    posX: number;
+    posY: number;
+    health: number;
+    score: number;
+    killedEnemies: Record<number, number>;
+    survivalSeconds: number;
+    isHost: boolean;
+    skinIndex: number;
+}
+
+export interface MultiplayerRoomConfig {
+    difficulty: number;
+    maxPlayers: number;
+}
+
+export interface MultiplayerRoomData {
+    id: string;
+    hostId: string;
+    config: MultiplayerRoomConfig;
+    players: Map<string, MultiplayerPlayerData>;
+    disconnectedPlayers: Map<string, MultiplayerPlayerData>;
+    status: 'waiting' | 'playing' | 'ended';
+    gameStartTime?: number;
+}
+
+export interface MultiplayerRoomInfo {
+    id: string;
+    hostPseudo: string;
+    playerCount: number;
+    maxPlayers: number;
+    difficulty: number;
+}
+
+export interface MultiplayerEndGameStats {
+    pseudo: string;
+    score: number;
+    killedEnemies: number;
+    survivalSeconds: number;
+    status: 'alive' | 'dead';
+}
+
 export class SecondPlayer {
     posX: number;
     posY: number;

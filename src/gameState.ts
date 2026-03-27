@@ -8,3 +8,4 @@ export function setCoopMode(value: boolean) {
 export function setCurrentRoomId(roomId: string | null) {
     currentRoomId = roomId;
 }
+

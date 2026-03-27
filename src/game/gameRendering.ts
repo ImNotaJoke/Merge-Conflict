@@ -11,7 +11,7 @@ import {
 	resetBullets,
 } from "./playerShoot.ts";
 import { socket } from "../socket.ts";
-import { menuSelection, bonusDisplayUpdate } from "../main.ts";
+import { menuSelection, bonusDisplayUpdate, isMultiplayerMode, isSpectatorMode, multiplayerPlayers, sendMultiPlayerDied, sendMultiEnemyKilled, sendMultiEnemyHurt, sendMultiHealthUpdate } from "../main.ts";
 import { isCoopMode, currentRoomId } from "../gameState.ts";
 import { updateHealth } from "./runManagement.ts";
 
@@ -41,7 +41,23 @@ let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
 
 export let secondPlayer: SecondPlayer | null = null;
+const secondPlayerImage = new Image();
 
+const multiPlayerImages: HTMLImageElement[] = [];
+const multiPlayerSkins = [
+	'/assets/character/isabelle/RIGHT/mtr1.png',
+	'/assets/character/doomGuy/DoomGuy.png',
+	'/assets/character/isabelle/UP/mtt1.png',
+	'/assets/character/doomGuy/DoomGuy.png',
+];
+
+for (let i = 0; i < multiPlayerSkins.length; i++) {
+	const img = new Image();
+	img.src = multiPlayerSkins[i];
+	multiPlayerImages.push(img);
+}
+
+secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
 bonusImage.src = '../../assets/power_up.png';
 
 image.set("isa-lega", new Image());
@@ -74,6 +90,7 @@ skinSelect.addEventListener('change', (event) => {
 });
 
 socket.on("ennemiEvent", (updatedEnnemies: Ennemi[]) => {
+	console.log("Client: Received ennemiEvent. Updated enemies count:", updatedEnnemies.length);
 	// Socket payloads are plain objects; rebuild class instances to keep Ennemi methods available.
 	ennemies = updatedEnnemies.map((ennemi) =>
 		new Ennemi(
@@ -143,9 +160,13 @@ export function resetRenderedGameState() {
 }
 
 function emitHealthUpdate() {
-	if (isCoopMode && currentRoomId && player.health !== lastEmittedHealth) {
+	if (player.health !== lastEmittedHealth) {
 		lastEmittedHealth = player.health;
-		socket.emit("healthUpdate", { health: player.health });
+		if (isMultiplayerMode) {
+			sendMultiHealthUpdate(player.health);
+		} else if (isCoopMode && currentRoomId) {
+			socket.emit("healthUpdate", { health: player.health });
+		}
 	}
 }
 
@@ -161,14 +182,28 @@ function areColliding(posX: number, posY: number) {
 }
 
 function render() {
+	// console.log("Client: render loop. Ennemies count:", ennemies.length, "isSpectatorMode:", isSpectatorMode); // Uncomment for very verbose logging
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	player.posX = x;
 	player.posY = y;
 	drawEnnemies();
 	drawBonuses();
+
+	if (isSpectatorMode) {
+		context.globalAlpha = 0.3;
+		context.filter = 'grayscale(100%)';
+	}
 	context.drawImage(player.models[0], player.posX, player.posY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	context.filter = 'none';
+	context.globalAlpha = 1.0;
 	drawPlayerLabel(player.posX, player.posY, "VOUS");
+
 	drawSecondPlayer();
+
+	if (isMultiplayerMode) {
+		drawMultiplayerPlayers();
+	}
+
 	updateBullets();
 
 	activeBullets.forEach(balle => {
@@ -216,6 +251,40 @@ function drawSecondPlayer() {
 	context.drawImage(secondPlayer.model, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	context.globalAlpha = 1.0;
 	drawPlayerLabel(renderX, renderY, "J2");
+}
+
+function drawMultiplayerPlayers() {
+	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
+	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
+
+	let playerIndex = 0;
+	multiplayerPlayers.forEach((p, socketId) => {
+		if (socketId === socket.id) return;
+
+		const renderX = Math.min((p.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
+		const renderY = Math.min((p.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+
+		const skinImg = multiPlayerImages[p.skinIndex % multiPlayerImages.length];
+
+		if (p.status === 'spectator') {
+			context.globalAlpha = 0.3;
+			context.filter = 'grayscale(100%)';
+		} else {
+			context.globalAlpha = 0.85;
+		}
+
+		if (skinImg && skinImg.complete) {
+			context.drawImage(skinImg, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+		}
+
+		context.filter = 'none';
+		context.globalAlpha = 1.0;
+
+		const label = p.pseudo.substring(0, 6);
+		drawPlayerLabel(renderX, renderY, label);
+
+		playerIndex++;
+	});
 }
 
 function bulletsAreColliding(posX: number, posY: number) {
@@ -357,19 +426,40 @@ function drawEnnemies() {
 	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
 
+	if (isSpectatorMode) {
+		for (let i = ennemies.length - 1; i >= 0; i--) {
+			const ennemi = ennemies[i];
+			if (!ennemi) continue;
+			const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX + ENNEMI_RENDER_WIDTH);
+			const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+			const ennemiImage = ennemiImages[ennemi.imageId] ?? ennemiImages[0];
+			context.drawImage(ennemiImage, renderX, renderY, ENNEMI_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT);
+		}
+		return;
+	}
 
 	for (let i = ennemies.length - 1; i >= 0; i--) {
 		const ennemi = ennemies[i];
+		if (!ennemi) continue;
+
 		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX + ENNEMI_RENDER_WIDTH);
 		const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
 
 		if (bulletsAreColliding(renderX, renderY)) {
-			socket.emit("enemyHurt", i, player.projectileDamage);
+			if (isMultiplayerMode) {
+				sendMultiEnemyHurt(i, player.projectileDamage);
+			} else {
+				socket.emit("enemyHurt", i, player.projectileDamage);
+			}
 			ennemi.health -= player.projectileDamage;
 			ennemy_hit_sound.currentTime = 0;
 			ennemy_hit_sound.play();
 			if (ennemi.health <= 0) {
-				socket.emit("enemyKilled");
+				if (isMultiplayerMode) {
+					sendMultiEnemyKilled(i);
+				} else {
+					socket.emit("enemyKilled");
+				}
 				ennemy_death_sound.currentTime = 0;
 				ennemy_death_sound.play();
 			}
@@ -382,17 +472,34 @@ function drawEnnemies() {
 			updateHealth();
 			emitHealthUpdate();
 			ennemies.splice(i, 1);
-			socket.emit("enemyKilled", i);
+
+			if (isMultiplayerMode) {
+				sendMultiEnemyKilled(i);
+			} else {
+				socket.emit("enemyKilled", i);
+			}
+
 			if (!player.verifyHealth()) {
-				if (isCoopMode && currentRoomId) {
+				if (isMultiplayerMode) {
+					sendMultiPlayerDied();
+				} else if (isCoopMode && currentRoomId) {
 					socket.emit("playerDied");
+					menuSelection("over");
+					ennemy_hit_sound.pause();
+					ennemy_death_sound.pause();
+					player_hurt_sound.pause();
+					bullet_shot_sound.pause();
+					resetRenderedGameState();
+					return;
+				} else {
+					menuSelection("over");
+					ennemy_hit_sound.pause();
+					ennemy_death_sound.pause();
+					player_hurt_sound.pause();
+					bullet_shot_sound.pause();
+					resetRenderedGameState();
+					return;
 				}
-				menuSelection("over");
-				ennemy_hit_sound.pause();
-				ennemy_death_sound.pause();
-				player_hurt_sound.pause();
-				bullet_shot_sound.pause();
-				resetRenderedGameState();
 			}
 		}
 

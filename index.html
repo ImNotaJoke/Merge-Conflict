@@ -43,6 +43,9 @@
                         <p class="game-stat-label">Allié : </p>
                         <div class="ally-hearts"></div>
                     </div>
+                    <div class="game-stat-item multi-allies-container hidden">
+                        <div class="multi-allies-list"></div>
+                    </div>
                     <div class="game-stat-bonus hidden"> 
                         <img class="attack_bonus hidden" src="/assets/attack_up.png" alt="bonus_attaque" height="50px">
                         <img class="speed_bonus hidden" src="/assets/speed_up.png" alt="bonus_vitesse" height="50px">
@@ -52,6 +55,10 @@
                 <div>
                     <button class="settingsBtn gameSettings">Options</button>
                     <button class="game-leave-btn">Quitter</button>
+                </div>
+                <!-- Mode spectateur indicator -->
+                <div class="spectator-overlay hidden">
+                    <p class="spectator-text">MODE SPECTATEUR</p>
                 </div>
             </header>
             <main class="game-main">
@@ -120,6 +127,7 @@
             <div class="button-row">
                 <button type="submit" class="game-btn solo">Solo</button>
                 <button type="submit" class="game-btn coop">Coop</button>
+                <button type="submit" class="game-btn multi">Multijoueur</button>
             </div>
             <button class="game-btn leaderboard">Leaderboard</button>
         </div>
@@ -231,6 +239,111 @@
                 <button class="refresh-rooms-btn">Actualiser</button>
             </article>
             <button class="back-btn rooms-back-btn">Retour</button>
+        </div>
+    </section>
+
+    <section class="multi-menu-section hidden">
+        <div class="multi-menu-main">
+            <h1>Mode Multijoueur</h1>
+            <p class="multi-subtitle">3 à 10 joueurs</p>
+            <div class="multi-buttons">
+                <button class="game-btn multi-host-btn">Héberger une partie</button>
+                <button class="game-btn multi-join-btn">Rejoindre une partie</button>
+            </div>
+            <button class="back-btn multi-back-btn">Retour</button>
+        </div>
+    </section>
+
+    <!-- Configuration de l'hébergement multijoueur -->
+    <section class="multi-config-section hidden">
+        <div class="multi-config-main">
+            <h1>Créer une partie</h1>
+            <article class="glassmorphism multi-config-form">
+                <div class="multi-config-group">
+                    <label for="multi-difficulty">Difficulté :</label>
+                    <select id="multi-difficulty" class="multi-difficulty-select">
+                        <option value="0">EASY</option>
+                        <option value="1" selected>MEDIUM</option>
+                        <option value="2">HARD</option>
+                    </select>
+                </div>
+                <div class="multi-config-group">
+                    <label for="multi-max-players">Joueurs max :</label>
+                    <select id="multi-max-players" class="multi-max-players-select">
+                        <option value="3">3 joueurs</option>
+                        <option value="4" selected>4 joueurs</option>
+                        <option value="5">5 joueurs</option>
+                        <option value="6">6 joueurs</option>
+                        <option value="7">7 joueurs</option>
+                        <option value="8">8 joueurs</option>
+                        <option value="9">9 joueurs</option>
+                        <option value="10">10 joueurs</option>
+                    </select>
+                </div>
+                <button class="game-btn multi-create-btn">Créer la partie</button>
+            </article>
+            <button class="back-btn multi-config-back-btn">Retour</button>
+        </div>
+    </section>
+
+    <!-- Salle d'attente multijoueur (lobby) -->
+    <section class="multi-lobby-section hidden">
+        <div class="multi-lobby-main">
+            <h1>Lobby</h1>
+            <div class="glassmorphism multi-lobby-info">
+                <p class="multi-room-id">Code: <span class="multi-room-id-display">---</span></p>
+                <p class="multi-room-config">Difficulté: <span class="multi-difficulty-display">MEDIUM</span> | Max: <span class="multi-max-display">4</span> joueurs</p>
+                <div class="multi-players-list">
+                    <h3>Joueurs connectés:</h3>
+                    <ul class="multi-players-ul"></ul>
+                </div>
+                <p class="multi-waiting-status">En attente de joueurs...</p>
+            </div>
+            <div class="multi-lobby-buttons">
+                <button class="game-btn multi-start-btn hidden">Lancer la partie</button>
+                <button class="back-btn multi-leave-btn">Quitter le lobby</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Liste des rooms multijoueurs disponibles -->
+    <section class="multi-room-list-section hidden">
+        <div class="multi-room-list-main">
+            <h1>Parties disponibles</h1>
+            <article class="glassmorphism multi-rooms-container">
+                <div class="multi-rooms-list">
+                    <p class="multi-no-rooms-msg">Aucune partie disponible...</p>
+                </div>
+                <button class="multi-refresh-rooms-btn">Actualiser</button>
+            </article>
+            <button class="back-btn multi-rooms-back-btn">Retour</button>
+        </div>
+    </section>
+
+    <!-- Leaderboard de fin de partie multijoueur (non enregistré) -->
+    <section class="multi-end-section hidden">
+        <div class="multi-end-main">
+            <h1>Partie terminée !</h1>
+            <article class="glassmorphism multi-end-stats">
+                <h2>Classement</h2>
+                <table class="multi-leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Joueur</th>
+                            <th>Score</th>
+                            <th>Ennemis tués</th>
+                            <th>Survie</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="multi-leaderboard-body"></tbody>
+                </table>
+            </article>
+            <div class="multi-end-buttons">
+                <button class="game-btn multi-back-lobby-btn">Retour au lobby</button>
+                <button class="back-btn multi-back-menu-btn">Menu principal</button>
+            </div>
         </div>
     </section>
 </body>

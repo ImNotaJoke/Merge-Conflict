@@ -624,3 +624,367 @@ label {
   height: 24px;
   opacity: 0.9;
 }
+
+.multi-menu-main,
+.multi-config-main,
+.multi-lobby-main,
+.multi-room-list-main,
+.multi-end-main {
+  display: flex;
+  gap: 30px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 10vh;
+}
+
+.multi-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  margin-top: -20px;
+  text-align: center;
+}
+
+.multi-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.multi-back-btn,
+.multi-config-back-btn,
+.multi-leave-btn,
+.multi-rooms-back-btn {
+  position: fixed;
+  bottom: 35px;
+  left: 20px;
+}
+
+/* Multi config form */
+.multi-config-form {
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.multi-config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.multi-config-group label {
+  font-size: 1rem;
+}
+
+.multi-difficulty-select,
+.multi-max-players-select {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 15px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.multi-difficulty-select option,
+.multi-max-players-select option {
+  color: black;
+  background: white;
+}
+
+.multi-difficulty-select:hover,
+.multi-max-players-select:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Multi lobby styles */
+.multi-lobby-info {
+  text-align: center;
+  min-width: 400px;
+}
+
+.multi-room-id {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.multi-room-id-display {
+  font-weight: bold;
+  color: #e74c3c;
+  font-size: 1.5rem;
+}
+
+.multi-room-config {
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+.multi-players-list {
+  text-align: left;
+  margin: 20px 0;
+}
+
+.multi-players-list h3 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.multi-players-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.multi-player-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.host-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.multi-waiting-status {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.multi-lobby-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.multi-start-btn {
+  background: rgba(46, 204, 113, 0.6) !important;
+}
+
+.multi-start-btn:hover {
+  background: rgba(46, 204, 113, 0.8) !important;
+}
+
+/* Multi room list */
+.multi-rooms-container {
+  min-width: 500px;
+  max-width: 700px;
+}
+
+.multi-rooms-list {
+  max-height: 350px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.multi-no-rooms-msg {
+  text-align: center;
+  opacity: 0.7;
+  padding: 20px;
+}
+
+.multi-room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.multi-room-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.room-info {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.join-multi-room-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: rgba(231, 76, 60, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.join-multi-room-btn:hover {
+  background: rgba(231, 76, 60, 0.8);
+  transform: translateY(-2px);
+}
+
+.multi-refresh-rooms-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.multi-refresh-rooms-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Multi end game stats */
+.multi-end-stats {
+  min-width: 600px;
+  max-width: 900px;
+}
+
+.multi-end-stats h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.multi-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.multi-leaderboard-table th,
+.multi-leaderboard-table td {
+  padding: 12px 15px;
+  text-align: center;
+}
+
+.multi-leaderboard-table thead {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.multi-leaderboard-table tbody tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.multi-leaderboard-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.multi-leaderboard-table .alive-player td:last-child {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.multi-leaderboard-table .dead-player td:last-child {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.multi-leaderboard-table tbody tr:first-child {
+  background: rgba(241, 196, 15, 0.2);
+}
+
+.multi-leaderboard-table tbody tr:nth-child(2) {
+  background: rgba(189, 195, 199, 0.15);
+}
+
+.multi-leaderboard-table tbody tr:nth-child(3) {
+  background: rgba(205, 127, 50, 0.15);
+}
+
+.multi-end-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Spectator mode overlay */
+.spectator-overlay {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(231, 76, 60, 0.8);
+  padding: 10px 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.spectator-text {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Multi allies container */
+.multi-allies-container {
+  border-color: #e74c3c !important;
+  max-width: 300px;
+}
+
+.multi-allies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.multi-ally-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.multi-ally-item.spectator {
+  opacity: 0.5;
+}
+
+.ally-pseudo {
+  min-width: 60px;
+}
+
+.ally-hearts-mini {
+  display: flex;
+  gap: 2px;
+}
+
+.ally-heart-mini {
+  width: 16px;
+  height: 16px;
+}
+
+.spectator-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-left: auto;
+}

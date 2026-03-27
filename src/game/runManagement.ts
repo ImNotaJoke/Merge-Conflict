@@ -161,6 +161,16 @@ export function finalizeCurrentRun(saveScore: boolean) {
     }
 }
 
+export function getSeconds(): number {
+    if (isGameOver) return finalSurvivalSeconds;
+    return Math.max(0, Math.floor((Date.now() - gameStartTimeMs) / 1000));
+}
+
+export function computeCurrentScore(): number {
+    const seconds = getSeconds();
+    return computeScore(seconds, player.killedEnnemies);
+}
+
 function getNbKilledEnnemies(killed: Map<number, number>):number {
     let nb = 0;
     killed.forEach((score) => {

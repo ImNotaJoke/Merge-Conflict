@@ -1,7 +1,7 @@
 import http from 'http';
 import { Server as IOServer } from 'socket.io';
-import type { LeaderboardEntry } from '../common/types.ts';
-import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi, playerDisconnected } from './ennemies-management.ts';
+import type { LeaderboardEntry, MultiplayerPlayerData, MultiplayerRoomData, MultiplayerRoomConfig, MultiplayerRoomInfo, MultiplayerEndGameStats } from '../common/types.ts';
+import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi, playerDisconnected, startMultiplayerGame } from './ennemies-management.ts';
 import { saveScore, getSeparateLeaderboards } from './leaderboard-storage.ts';
 
 const name: string = process.argv[2];
@@ -28,8 +28,78 @@ interface RoomData {
 const rooms: Map<string, RoomData> = new Map();
 const playerRooms: Map<string, string> = new Map();
 
+const multiRooms: Map<string, MultiplayerRoomData> = new Map();
+const multiPlayerRooms: Map<string, string> = new Map(); // socketId -> roomId
+
 function generateRoomId(): string {
 	return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function createMultiplayerPlayer(socketId: string, pseudo: string, isHost: boolean, skinIndex: number = 0): MultiplayerPlayerData {
+	return {
+		socketId,
+		pseudo,
+		status: 'waiting',
+		posX: 100,
+		posY: 360,
+		health: 3,
+		score: 0,
+		killedEnemies: {},
+		survivalSeconds: 0,
+		isHost,
+		skinIndex,
+	};
+}
+
+function migrateHost(room: MultiplayerRoomData): boolean {
+	for (const [socketId, player] of room.players) {
+		if (player.status !== 'disconnected') {
+			room.hostId = socketId;
+			player.isHost = true;
+			console.log(`[Room ${room.id}] Host migrated to ${player.pseudo}`);
+			return true;
+		}
+	}
+	return false;
+}
+
+function getAlivePlayersCount(room: MultiplayerRoomData): number {
+	let count = 0;
+	for (const player of room.players.values()) {
+		if (player.status === 'playing') {
+			count++;
+		}
+	}
+	return count;
+}
+
+function getAllPlayersEndStats(room: MultiplayerRoomData): MultiplayerEndGameStats[] {
+	const stats: MultiplayerEndGameStats[] = [];
+
+	for (const player of room.players.values()) {
+		const totalKilled = Object.values(player.killedEnemies).reduce((a, b) => a + b, 0);
+		stats.push({
+			pseudo: player.pseudo,
+			score: player.score,
+			killedEnemies: totalKilled,
+			survivalSeconds: player.survivalSeconds,
+			status: player.status === 'spectator' ? 'dead' : 'alive',
+		});
+	}
+
+	for (const player of room.disconnectedPlayers.values()) {
+		const totalKilled = Object.values(player.killedEnemies).reduce((a, b) => a + b, 0);
+		stats.push({
+			pseudo: player.pseudo,
+			score: player.score,
+			killedEnemies: totalKilled,
+			survivalSeconds: player.survivalSeconds,
+			status: 'dead',
+		});
+	}
+
+	stats.sort((a, b) => b.score - a.score);
+	return stats;
 }
 
 const port = process.env['PORT'] || 8080;
@@ -63,6 +133,47 @@ io.on('connection', socket => {
 				rooms.delete(roomId);
 			}
 			playerRooms.delete(socket.id);
+		}
+
+		const multiRoomId = multiPlayerRooms.get(socket.id);
+		if (multiRoomId) {
+			const multiRoom = multiRooms.get(multiRoomId);
+			if (multiRoom) {
+				const player = multiRoom.players.get(socket.id);
+				if (player) {
+					multiRoom.disconnectedPlayers.set(player.pseudo, { ...player, status: 'disconnected' });
+					multiRoom.players.delete(socket.id);
+
+					if (multiRoom.hostId === socket.id) {
+						const migrated = migrateHost(multiRoom);
+						if (migrated) {
+							io.to(multiRoomId).emit("multiHostMigrated", {
+								newHostId: multiRoom.hostId,
+								newHostPseudo: multiRoom.players.get(multiRoom.hostId)?.pseudo
+							});
+						}
+					}
+
+					io.to(multiRoomId).emit("multiPlayerDisconnected", {
+						socketId: socket.id,
+						pseudo: player.pseudo
+					});
+
+					if (multiRoom.players.size === 0) {
+						multiRooms.delete(multiRoomId);
+						stopPlaying(multiRoomId, socket.id);
+						console.log(`[Room ${multiRoomId}] Deleted (empty)`);
+					} else if (multiRoom.status === 'playing' && getAlivePlayersCount(multiRoom) === 0) {
+						multiRoom.status = 'ended';
+						stopPlaying(multiRoomId, socket.id);
+						const stats = getAllPlayersEndStats(multiRoom);
+						io.to(multiRoomId).emit("multiGameEnded", { stats, reason: "all_dead" });
+					} else {
+						stopPlaying(multiRoomId, socket.id);
+					}
+				}
+			}
+			multiPlayerRooms.delete(socket.id);
 		}
 
 		const sessionId = playerSessions.get(socket.id);
@@ -121,20 +232,16 @@ io.on('connection', socket => {
 		playerRooms.set(socket.id, data.roomId);
 		socket.join(data.roomId);
 
-		console.log(`Player ${socket.id} joined room ${data.roomId}`);
+		console.log(`Server: Player ${socket.id} (${data.pseudo}) joined room ${data.roomId}`);
 		ack?.({ success: true, hostPseudo: room.hostPseudo });
 
-		io.to(room.hostId).emit("roomReady", {
-			guestPseudo: room.guestPseudo,
+		io.to(data.roomId).emit("roomReady", {
 			roomId: data.roomId
 		});
-
-		socket.emit("roomReady", {
-			hostPseudo: room.hostPseudo,
-			roomId: data.roomId
-		});
+		console.log(`Server: Emitted roomReady to room ${data.roomId}`);
 	});
 
+	// ... (rest of the code) ...
 	socket.on("leaveRoom", () => {
 		const roomId = playerRooms.get(socket.id);
 		if (!roomId) return;
@@ -294,5 +401,307 @@ io.on('connection', socket => {
 		if (sessionId) {
 			io.to(sessionId).emit("applyBonus", data);
 		}
+	});
+
+	socket.on("createMultiRoom", (data: { pseudo: string; config: MultiplayerRoomConfig; skinIndex?: number }, ack?: (result: { success: boolean; roomId?: string }) => void) => {
+		const roomId = generateRoomId();
+		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Host", true, data.skinIndex || 0);
+
+		const room: MultiplayerRoomData = {
+			id: roomId,
+			hostId: socket.id,
+			config: {
+				difficulty: data.config?.difficulty ?? 1,
+				maxPlayers: Math.min(10, Math.max(3, data.config?.maxPlayers ?? 4)),
+			},
+			players: new Map([[socket.id, player]]),
+			disconnectedPlayers: new Map(),
+			status: 'waiting',
+		};
+
+		multiRooms.set(roomId, room);
+		multiPlayerRooms.set(socket.id, roomId);
+		socket.join(roomId);
+
+		console.log(`[MultiRoom ${roomId}] Created by ${data.pseudo} (difficulty: ${room.config.difficulty}, max: ${room.config.maxPlayers})`);
+		ack?.({ success: true, roomId });
+	});
+
+	socket.on("getMultiRooms", (ack?: (roomList: MultiplayerRoomInfo[]) => void) => {
+		const availableRooms: MultiplayerRoomInfo[] = [];
+		multiRooms.forEach((room) => {
+			if (room.status === 'waiting' && room.players.size < room.config.maxPlayers) {
+				const host = room.players.get(room.hostId);
+				availableRooms.push({
+					id: room.id,
+					hostPseudo: host?.pseudo || "Unknown",
+					playerCount: room.players.size,
+					maxPlayers: room.config.maxPlayers,
+					difficulty: room.config.difficulty,
+				});
+			}
+		});
+		ack?.(availableRooms);
+	});
+
+	socket.on("joinMultiRoom", (data: { roomId: string; pseudo: string; skinIndex?: number }, ack?: (result: { success: boolean; error?: string; players?: MultiplayerPlayerData[]; config?: MultiplayerRoomConfig }) => void) => {
+		const room = multiRooms.get(data.roomId);
+		if (!room) {
+			ack?.({ success: false, error: "Room introuvable" });
+			return;
+		}
+		if (room.status !== 'waiting') {
+			const disconnectedPlayer = room.disconnectedPlayers.get(data.pseudo);
+			if (disconnectedPlayer && room.status === 'playing') {
+				disconnectedPlayer.socketId = socket.id;
+				disconnectedPlayer.status = disconnectedPlayer.health > 0 ? 'playing' : 'spectator';
+				room.players.set(socket.id, disconnectedPlayer);
+				room.disconnectedPlayers.delete(data.pseudo);
+				multiPlayerRooms.set(socket.id, data.roomId);
+				socket.join(data.roomId);
+
+				console.log(`[MultiRoom ${data.roomId}] ${data.pseudo} reconnected`);
+
+				socket.emit("multiReconnected", {
+					player: disconnectedPlayer,
+					config: room.config,
+					players: Array.from(room.players.values()),
+				});
+
+				io.to(data.roomId).emit("multiPlayerReconnected", {
+					player: disconnectedPlayer,
+				});
+
+				ack?.({ success: true, players: Array.from(room.players.values()), config: room.config });
+				return;
+			}
+			ack?.({ success: false, error: "Partie déjà en cours" });
+			return;
+		}
+		if (room.players.size >= room.config.maxPlayers) {
+			ack?.({ success: false, error: "Room pleine" });
+			return;
+		}
+
+		const player = createMultiplayerPlayer(socket.id, data.pseudo || "Player", false, data.skinIndex || 0);
+		room.players.set(socket.id, player);
+		multiPlayerRooms.set(socket.id, data.roomId);
+		socket.join(data.roomId);
+
+		console.log(`[MultiRoom ${data.roomId}] ${data.pseudo} joined (${room.players.size}/${room.config.maxPlayers})`);
+
+		io.to(data.roomId).emit("multiPlayerJoined", { player });
+
+		ack?.({ success: true, players: Array.from(room.players.values()), config: room.config });
+	});
+
+	socket.on("leaveMultiRoom", () => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room) return;
+
+		const player = room.players.get(socket.id);
+		socket.leave(roomId);
+		room.players.delete(socket.id);
+		multiPlayerRooms.delete(socket.id);
+
+		if (room.status === 'waiting') {
+			if (room.players.size === 0) {
+				multiRooms.delete(roomId);
+				console.log(`[MultiRoom ${roomId}] Deleted (host left in waiting)`);
+			} else if (room.hostId === socket.id) {
+				migrateHost(room);
+				io.to(roomId).emit("multiHostMigrated", {
+					newHostId: room.hostId,
+					newHostPseudo: room.players.get(room.hostId)?.pseudo
+				});
+			}
+			io.to(roomId).emit("multiPlayerLeft", { socketId: socket.id, pseudo: player?.pseudo });
+		} else if (room.status === 'playing') {
+			if (player) {
+				room.disconnectedPlayers.set(player.pseudo, { ...player, status: 'disconnected' });
+			}
+			io.to(roomId).emit("multiPlayerDisconnected", { socketId: socket.id, pseudo: player?.pseudo });
+
+			if (getAlivePlayersCount(room) === 0) {
+				room.status = 'ended';
+				const stats = getAllPlayersEndStats(room);
+				io.to(roomId).emit("multiGameEnded", { stats, reason: "all_dead" });
+			}
+		}
+
+		if (room.status === 'playing') {
+			stopPlaying(roomId, socket.id);
+		}
+
+		console.log(`[MultiRoom ${roomId}] ${player?.pseudo} left`);
+	});
+
+	socket.on("startMultiGame", () => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room || room.status !== 'waiting') return;
+
+		if (room.hostId !== socket.id) return;
+
+		if (room.players.size < 2) return;
+
+		room.status = 'playing';
+		room.gameStartTime = Date.now();
+
+		for (const player of room.players.values()) {
+			player.status = 'playing';
+		}
+
+		io.to(roomId).emit("multiGameStarted", {
+			players: Array.from(room.players.values()),
+			config: room.config,
+		});
+
+		const playerCount = room.players.size;
+		const playerIds = Array.from(room.players.keys());
+		startMultiplayerGame(roomId, playerCount, room.config.difficulty, playerIds);
+
+		console.log(`[MultiRoom ${roomId}] Game started with ${playerCount} players`);
+	});
+
+	socket.on("multiPlayerMove", (data: { posX: number; posY: number }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room || room.status !== 'playing') return;
+
+		const player = room.players.get(socket.id);
+		if (!player || player.status !== 'playing') return;
+
+		player.posX = data.posX;
+		player.posY = data.posY;
+
+		socket.to(roomId).emit("multiPlayerMoved", {
+			socketId: socket.id,
+			posX: data.posX,
+			posY: data.posY,
+		});
+	});
+
+	socket.on("multiPlayerShoot", (data: { posX: number; posY: number }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room || room.status !== 'playing') return;
+
+		const player = room.players.get(socket.id);
+		if (!player || player.status !== 'playing') return;
+
+		socket.to(roomId).emit("multiPlayerShot", {
+			socketId: socket.id,
+			posX: data.posX,
+			posY: data.posY,
+		});
+	});
+
+	socket.on("multiHealthUpdate", (data: { health: number }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room || room.status !== 'playing') return;
+
+		const player = room.players.get(socket.id);
+		if (!player) return;
+
+		player.health = data.health;
+
+		socket.to(roomId).emit("multiPlayerHealthUpdate", {
+			socketId: socket.id,
+			health: data.health,
+		});
+	});
+
+	socket.on("multiPlayerDied", (data: { score: number; killedEnemies: Record<number, number>; survivalSeconds: number }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room || room.status !== 'playing') return;
+
+		const player = room.players.get(socket.id);
+		if (!player) return;
+
+		player.status = 'spectator';
+		player.score = data.score;
+		player.killedEnemies = data.killedEnemies;
+		player.survivalSeconds = data.survivalSeconds;
+
+		console.log(`[MultiRoom ${roomId}] ${player.pseudo} died (score: ${data.score})`);
+
+		io.to(roomId).emit("multiPlayerBecameSpectator", {
+			socketId: socket.id,
+			pseudo: player.pseudo,
+		});
+
+		const alivePlayers = getAlivePlayersCount(room);
+		if (alivePlayers === 0) {
+			room.status = 'ended';
+			const stats = getAllPlayersEndStats(room);
+			io.to(roomId).emit("multiGameEnded", { stats, reason: "all_dead" });
+			console.log(`[MultiRoom ${roomId}] Game ended (all dead)`);
+		}
+	});
+
+	socket.on("multiScoreUpdate", (data: { score: number; killedEnemies: Record<number, number>; survivalSeconds: number }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) return;
+
+		const room = multiRooms.get(roomId);
+		if (!room) return;
+
+		const player = room.players.get(socket.id);
+		if (!player) return;
+
+		player.score = data.score;
+		player.killedEnemies = data.killedEnemies;
+		player.survivalSeconds = data.survivalSeconds;
+	});
+
+	socket.on("multiEnemyKilled", (index: number) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (roomId) {
+			removeEnnemi(roomId, index);
+		}
+	});
+
+	socket.on("multiEnemyHurt", (index: number, damage: number) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (roomId) {
+			hurtEnnemi(roomId, index, damage);
+		}
+	});
+
+	socket.on("multiCollectBonus", (data: { id: string; type: string }) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (roomId) {
+			io.to(roomId).emit("multiApplyBonus", data);
+		}
+	});
+
+	socket.on("getMultiRoomPlayers", (ack?: (players: MultiplayerPlayerData[]) => void) => {
+		const roomId = multiPlayerRooms.get(socket.id);
+		if (!roomId) {
+			ack?.([]);
+			return;
+		}
+		const room = multiRooms.get(roomId);
+		if (!room) {
+			ack?.([]);
+			return;
+		}
+		ack?.(Array.from(room.players.values()));
 	});
 });
