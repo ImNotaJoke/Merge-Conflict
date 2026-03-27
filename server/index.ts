@@ -1,7 +1,7 @@
 import http from 'http';
 import { Server as IOServer } from 'socket.io';
 import type { LeaderboardEntry, MultiplayerPlayerData, MultiplayerRoomData, MultiplayerRoomConfig, MultiplayerRoomInfo, MultiplayerEndGameStats } from '../common/types.ts';
-import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi, playerDisconnected, startMultiplayerGame } from './ennemies-management.ts';
+import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi, playerDisconnected, startMultiplayerGame, stopMultiplayerGame } from './ennemies-management.ts';
 import { saveScore, getSeparateLeaderboards } from './leaderboard-storage.ts';
 
 const name: string = process.argv[2];
@@ -329,7 +329,7 @@ io.on('connection', socket => {
 				posX: 0,
 				posY: 0,
 				socketId: socket.id,
-				skinId: data.skinIndex
+				modelId: data.skinIndex
 			});
 			socket.to(sessionId).emit("requestPositionUpdate");
 		}
@@ -513,6 +513,16 @@ io.on('connection', socket => {
 		room.players.delete(socket.id);
 		multiPlayerRooms.delete(socket.id);
 
+		if (room.status === 'playing' || room.status === 'ended') {
+			stopPlaying(roomId, socket.id);
+		}
+
+		if (room.players.size === 0) {
+			multiRooms.delete(roomId);
+			console.log(`[MultiRoom ${roomId}] Deleted (empty after leave)`);
+			return;
+		}
+
 		if (room.status === 'waiting') {
 			if (room.players.size === 0) {
 				multiRooms.delete(roomId);
@@ -533,13 +543,10 @@ io.on('connection', socket => {
 
 			if (getAlivePlayersCount(room) === 0) {
 				room.status = 'ended';
+				stopMultiplayerGame(roomId);
 				const stats = getAllPlayersEndStats(room);
 				io.to(roomId).emit("multiGameEnded", { stats, reason: "all_dead" });
 			}
-		}
-
-		if (room.status === 'playing') {
-			stopPlaying(roomId, socket.id);
 		}
 
 		console.log(`[MultiRoom ${roomId}] ${player?.pseudo} left`);
@@ -655,6 +662,7 @@ io.on('connection', socket => {
 		const alivePlayers = getAlivePlayersCount(room);
 		if (alivePlayers === 0) {
 			room.status = 'ended';
+			stopMultiplayerGame(roomId);
 			const stats = getAllPlayersEndStats(room);
 			io.to(roomId).emit("multiGameEnded", { stats, reason: "all_dead" });
 			console.log(`[MultiRoom ${roomId}] Game ended (all dead)`);

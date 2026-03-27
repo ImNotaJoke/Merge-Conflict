@@ -4,7 +4,7 @@ export const canvas = document.querySelector<HTMLCanvasElement>('.game-canva')!,
 import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRendering.ts";
 import { socket } from "../socket.ts";
 import { isCoopMode } from "../gameState.ts";
-import {  isMultiplayerMode, isSpectatorMode, sendMultiPlayerShoot } from "../main.ts";
+import {  isMultiplayerMode, isSpectatorMode, sendMultiPlayerShoot, multiplayerPlayers } from "../main.ts";
 
 export let bullet = new Image();
 bullet.src = "../../assets/bullet.png";
@@ -69,25 +69,8 @@ window.addEventListener("multiPlayerShot", (event: Event) => {
 
     if (!isMultiplayerMode) return;
     if (data.socketId === socket.id) return;
-
-    const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
-    const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
-
-    const renderX = Math.min((data.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
-    const renderY = Math.min((data.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
-
-    secondPlayerBullets.push({
-        bx: renderX + PLAYER_RENDER_WIDTH - BULLET_RENDER_WIDTH / 2,
-        by: renderY + PLAYER_RENDER_HEIGHT / 2 - BULLET_RENDER_HEIGHT / 2 + BULLET_VERTICAL_OFFSET,
-    });
-});
-
-window.addEventListener("multiPlayerShot", (event: Event) => {
-    const customEvent = event as CustomEvent<{ socketId: string; posX: number; posY: number }>;
-    const data = customEvent.detail;
-
-    if (!isMultiplayerMode) return;
-    if (data.socketId === socket.id) return;
+    const shooter = multiplayerPlayers.get(data.socketId);
+    if (!shooter || shooter.status !== 'playing') return;
 
     const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
     const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);

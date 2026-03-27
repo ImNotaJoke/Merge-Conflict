@@ -5,6 +5,7 @@ import { player } from "./game/gameRendering.ts";
 import { socket } from "./socket.ts";
 import { startNewGame, resetCurrentGame, finalizeCurrentRun, stopGameTimer, startGameTimer, maxHealth, getSeconds, computeCurrentScore } from "./game/runManagement.ts";
 import type { MultiplayerPlayerData, MultiplayerRoomConfig, MultiplayerRoomInfo, MultiplayerEndGameStats } from "../common/types.ts";
+import { setCoopMode as setSharedCoopMode, setCurrentRoomId as setSharedCurrentRoomId } from "./gameState.ts";
 
 export let isCoopMode = false;
 export let isMultiplayerMode = false;
@@ -15,6 +16,7 @@ export let multiplayerConfig: MultiplayerRoomConfig | null = null;
 
 export function setCoopMode(value: boolean) {
     isCoopMode = value;
+    setSharedCoopMode(value);
 }
 
 export function setMultiplayerMode(value: boolean) {
@@ -33,6 +35,7 @@ export function setSpectatorMode(value: boolean) {
 
 export function setCurrentRoomId(roomId: string | null) {
     currentRoomId = roomId;
+    setSharedCurrentRoomId(roomId);
 }
 
 
@@ -64,7 +67,7 @@ const allyHearts = document.querySelector(".ally-hearts")!;
 const soloButton = document.querySelector(".game-btn.solo");
 const coopButton = document.querySelector(".game-btn.coop");
 const overBackButton = document.querySelector(".rejouer-back");
-const video = document.querySelector('.back-video,source') as HTMLVideoElement;
+const video = document.querySelector('.back-video') as HTMLVideoElement;
 const settingsBtn = document.querySelectorAll('.settingsBtn');
 const leaderboardTable = document.querySelector('.leaderboard-section table tbody');
 const leaderboardBtn = document.querySelector('.leaderboard.game-btn');
@@ -111,16 +114,24 @@ let currentSpeedTimeout: NodeJS.Timeout | null = null;
 let currentInvincibilityTimeout: NodeJS.Timeout | null = null;
 
 export let difficulty: number = 0;
-let videoPlaying = video.play();
+let videoPlaying: Promise<void> | undefined;
+
+function playVideoSafely() {
+    if (!video) return;
+    videoPlaying = video.play().catch(() => undefined);
+}
 
 initializeEventListeners();
 
 export function pauseVideo() {
-    if(videoPlaying !== undefined) {
-        videoPlaying.then(_ => {
+    if (!video) return;
+    if (videoPlaying !== undefined) {
+        void videoPlaying.finally(() => {
             video.pause();
-        })
+        });
+        return;
     }
+    video.pause();
 }
 
 creditsform?.addEventListener('submit', (event) => {
@@ -347,8 +358,9 @@ coopHostBtn?.addEventListener('click', (event) => {
     event.preventDefault();
     player.isHost = true;
     const pseudo = pseudoInput?.value || "Guest";
+    const skinIndex = skinSelect.value;
     console.log("Client Host: Emitting createRoom event.");
-    socket.emit("createRoom", { pseudo }, (result: { success: boolean; roomId?: string }) => {
+    socket.emit("createRoom", { pseudo, skinIndex }, (result: { success: boolean; roomId?: string }) => {
         if (result.success && result.roomId) {
             setCurrentRoomId(result.roomId);
             if (roomIdDisplay) roomIdDisplay.textContent = result.roomId;
@@ -539,7 +551,11 @@ socket.on("multiPlayerBecameSpectator", (data: { socketId: string; pseudo: strin
 });
 
 socket.on("multiPlayerDisconnected", (data: { socketId: string; pseudo: string }) => {
-    multiplayerPlayers.delete(data.socketId);
+    const p = multiplayerPlayers.get(data.socketId);
+    if (p) {
+        p.status = 'spectator';
+        p.health = 0;
+    }
     updateMultiAlliesDisplay();
 });
 
@@ -600,7 +616,7 @@ function updateMultiAlliesDisplay() {
         allyDiv.innerHTML = `
             <span class="ally-pseudo">${escapeHtml(p.pseudo.substring(0, 8))}</span>
             <div class="ally-hearts-mini">${heartsHtml}</div>
-            ${p.status === 'spectator' ? '<span class="spectator-badge">MORT</span>' : ''}
+            ${p.status === 'spectator' ? '<span class="spectator-badge">SPECTATEUR</span>' : ''}
         `;
         multiAlliesList.appendChild(allyDiv);
     });
@@ -724,7 +740,7 @@ leaderboardBtn?.addEventListener('click', (event) => {
 starterBtn?.addEventListener('click', (event) => {
     event.preventDefault();
     menuSelection("main");
-    video?.play().catch(() => {});
+    playVideoSafely();
 });
 
 export function menuSelection(menu: string) {

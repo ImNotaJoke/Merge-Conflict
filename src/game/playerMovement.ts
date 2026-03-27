@@ -23,10 +23,11 @@ const ACCELERATION = 0.5;
 const FRICTION = 0.85;
 
 import { getInputMode } from "../Parameter.ts";
-import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
+import { PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH} from "./gameRendering.ts";
 import { socket } from "../socket.ts";
 import { isCoopMode } from "../gameState.ts";
 import {  isMultiplayerMode, isSpectatorMode, sendMultiPlayerMove } from "../main.ts";
+const skinSelect = document.querySelector<HTMLSelectElement>('.skin-select');
 
 // Server arena dimensions for coordinate conversion
 const SERVER_ARENA_WIDTH = 1980;
@@ -46,11 +47,12 @@ function emitPlayerPosition() {
 	if (isSpectatorMode) return;
 
 	const serverCoords = toServerCoords(x, y);
+	const modelId = skinSelect?.value ?? "isa-lega";
 
 	if (isMultiplayerMode) {
 		sendMultiPlayerMove(serverCoords.posX, serverCoords.posY);
 	} else if (isCoopMode) {
-		socket.emit("playerMove", serverCoords);
+		socket.emit("playerMove", { ...serverCoords, modelId });
 	}
 }
 
@@ -58,10 +60,12 @@ function emitPlayerPosition() {
 socket.on("requestPositionUpdate", () => {
 	if (isCoopMode) {
 		const serverCoords = toServerCoords(x, y);
-		const newX = serverCoords.posX;
-		const newY = serverCoords.posY
-		const model = player.models[0]
-		socket.emit("playerMove", {newX, newY, model} );
+		const modelId = skinSelect?.value ?? "isa-lega";
+		socket.emit("playerMove", {
+			posX: serverCoords.posX,
+			posY: serverCoords.posY,
+			modelId,
+		});
 	}
 });
 

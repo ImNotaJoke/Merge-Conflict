@@ -109,11 +109,13 @@ socket.on("ennemiEvent", (updatedEnnemies: Ennemi[]) => {
 socket.on("secondPlayerUpdate", (data: SecondPlayerData) => {
 	if (!isCoopMode) return;
 	if (data.socketId === socket.id) return;
+	const skinId = data.modelId || 'isa-lega';
 
 	if (!secondPlayer) {
-		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId, data.modelId || 'isa-lega');
+		secondPlayer = new SecondPlayer(data.posX, data.posY, data.socketId, skinId);
 	} else {
 		secondPlayer.updatePosition(data.posX, data.posY);
+		secondPlayer.skinId = skinId;
 	}
 });
 
@@ -239,18 +241,37 @@ function drawPlayerLabel(renderX: number, renderY: number, label: string) {
 	context.restore();
 }
 
+function drawDeadOverlay(renderX: number, renderY: number) {
+	context.save();
+	context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+	context.fillRect(renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+
+	context.font = "bold 16px Arial";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.strokeStyle = "#000000";
+	context.fillStyle = "#f0f0f0";
+	context.lineWidth = 3;
+
+	const centerX = renderX + PLAYER_RENDER_WIDTH / 2;
+	const centerY = renderY + PLAYER_RENDER_HEIGHT / 2;
+	context.strokeText("MORT", centerX, centerY);
+	context.fillText("MORT", centerX, centerY);
+	context.restore();
+}
+
 function drawSecondPlayer() {
 	if (!secondPlayer) return;
-
-	console.log("je suis là");
 
 	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
 	const renderX = Math.min((secondPlayer.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
 	const renderY = Math.min((secondPlayer.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+	const secondPlayerSkin = image.get(secondPlayer.skinId) ?? image.get('isa-lega');
+	if (!secondPlayerSkin) return;
 
 	context.globalAlpha = 0.8;
-	context.drawImage(image.get(secondPlayer.skinId)!, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
+	context.drawImage(secondPlayerSkin, renderX, renderY, PLAYER_RENDER_WIDTH, PLAYER_RENDER_HEIGHT);
 	context.globalAlpha = 1.0;
 	drawPlayerLabel(renderX, renderY, "J2");
 }
@@ -259,7 +280,6 @@ function drawMultiplayerPlayers() {
 	const maxRenderX = Math.max(canvas.width - PLAYER_RENDER_WIDTH, 0);
 	const maxRenderY = Math.max(canvas.height - PLAYER_RENDER_HEIGHT, 0);
 
-	let playerIndex = 0;
 	multiplayerPlayers.forEach((p, socketId) => {
 		if (socketId === socket.id) return;
 
@@ -268,8 +288,8 @@ function drawMultiplayerPlayers() {
 
 		const skinImg = image.get(p.skinIndex)!;
 		if (p.status === 'spectator') {
-			context.globalAlpha = 0.3;
-			context.filter = 'grayscale(100%)';
+			context.globalAlpha = 0.2;
+			context.filter = 'grayscale(100%) contrast(60%) brightness(70%)';
 		} else {
 			context.globalAlpha = 0.85;
 		}
@@ -281,10 +301,12 @@ function drawMultiplayerPlayers() {
 		context.filter = 'none';
 		context.globalAlpha = 1.0;
 
+		if (p.status === 'spectator') {
+			drawDeadOverlay(renderX, renderY);
+		}
+
 		const label = p.pseudo.substring(0, 6);
 		drawPlayerLabel(renderX, renderY, label);
-
-		playerIndex++;
 	});
 }
 
