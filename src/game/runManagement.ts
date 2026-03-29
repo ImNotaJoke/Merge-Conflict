@@ -19,12 +19,20 @@ const DEFAULT_HEALTH = 3;
 
 let gameTimer: ReturnType<typeof setInterval> | undefined;
 let gameStartTimeMs = 0;
-let audioPlaying = audio.play();
+let audioPlaying: Promise<void> | undefined;
 let lastRunStats: GameRunStats | undefined;
 let isGameOver = false;
 let finalScore = 0;
 let finalSurvivalSeconds = 0;
 export let maxHealth = 3;
+
+function playAudioSafely(audioElement: HTMLAudioElement) {
+    const playing = audioElement.play();
+    if (playing !== undefined) {
+        void playing.catch(() => undefined);
+    }
+    return playing;
+}
 
 export function getLastRunStats() {
     return lastRunStats;
@@ -47,7 +55,7 @@ export function startNewGame() {
     stopGameTimer();
     resetPlayerPosition();
     resetRenderedGameState();
-    audio.play();
+    audioPlaying = playAudioSafely(audio);
     player.killedEnnemies = new Map();
     switch(difficulty) {
         case 0:
@@ -94,11 +102,13 @@ export function stopGameTimer() {
 }
 
 function pauseAudio() {
-    if(audioPlaying !== undefined) {
-        audioPlaying.then(_ => {
+    if (audioPlaying !== undefined) {
+        void audioPlaying.finally(() => {
             audio.pause();
-        })
+        });
+        return;
     }
+    audio.pause();
 }
 
 function updateInGameStats(elapsedSeconds: number) {
@@ -187,5 +197,3 @@ function getNbKilledEnnemies(killed: Map<number, number>):number {
     });
     return nb;
 }
-
-pauseAudio();

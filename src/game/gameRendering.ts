@@ -367,7 +367,7 @@ function checkEnemyBulletsCollision() {
 				
 				if (player.health > 0) {
 					player_hurt_sound.currentTime = 0;
-					player_hurt_sound.play();
+					playAudioSafely(player_hurt_sound);
 					player.takeHealth();
 					updateHealth();
 					emitHealthUpdate();
@@ -398,21 +398,21 @@ function bonus_type_effect_determination(type: string) {
 		case "attack":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.projectileDamage *= 2;
 			setTimeout(() => { player.projectileDamage = player.projectileDamage / 2; }, 10000);
 			break;
 		case "speed":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.shootSpeed = 25;
 			setTimeout(() => { player.shootSpeed = 10; }, 10000);
 			break;
 		case "invincibility":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.invincibility = true;
 			setTimeout(() => { player.invincibility = false; }, 5000);
 			break;	
@@ -478,7 +478,7 @@ function drawEnnemies() {
 			}
 			ennemi.health -= player.projectileDamage;
 			ennemy_hit_sound.currentTime = 0;
-			ennemy_hit_sound.play();
+			playAudioSafely(ennemy_hit_sound);
 			if (ennemi.health <= 0) {
 				if (isMultiplayerMode) {
 					sendMultiEnemyKilled(i);
@@ -486,13 +486,13 @@ function drawEnnemies() {
 					socket.emit("enemyKilled");
 				}
 				ennemy_death_sound.currentTime = 0;
-				ennemy_death_sound.play();
+				playAudioSafely(ennemy_death_sound);
 			}
 		}
 
 		if (areColliding(renderX, renderY)) {
 			player_hurt_sound.currentTime = 0;
-			player_hurt_sound.play();
+			playAudioSafely(player_hurt_sound);
 			player.takeHealth();
 			updateHealth();
 			emitHealthUpdate();
@@ -547,10 +547,12 @@ function resampleCanvas() {
 }
 
 function pauseAudio(audio: HTMLAudioElement) {
-	let audioPlaying = audio.play();
-	if(audioPlaying !== undefined) {
-		audioPlaying.then(_ => {
-			audio.pause();
-		})
+	audio.pause();
+}
+
+function playAudioSafely(audio: HTMLAudioElement) {
+	const audioPlaying = audio.play();
+	if (audioPlaying !== undefined) {
+		void audioPlaying.catch(() => undefined);
 	}
 }
