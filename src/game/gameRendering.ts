@@ -41,6 +41,7 @@ const ennemiImages = [new Image(), new Image(), new	Image(), new Image()];
 let ennemies: Ennemi[] = [];
 let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
+const pendingBossShots: ReturnType<typeof setTimeout>[] = [];
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
@@ -151,7 +152,7 @@ socket.on("enemyShoot", (data: { posX: number, posY: number }) => {
 	});
 });
 
-socket.on("bossShootPattern", (data: { posX: number, yPositions: number[] }) => {
+socket.on("bossShootPattern", (data: { posX: number, yPositions: number[], shotDelays?: number[] }) => {
 	const maxRenderX = Math.max(canvas.width - BOSS_RENDER_WIDTH, 0);
 	const renderX = Math.min((data.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
 	const maxRenderY = Math.max(canvas.height - BULLET_RENDER_HEIGHT, 0);
@@ -159,11 +160,15 @@ socket.on("bossShootPattern", (data: { posX: number, yPositions: number[] }) => 
 	for (let i = 0; i < data.yPositions.length; i++) {
 		const shotY = data.yPositions[i];
 		const renderY = Math.min((shotY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
-		enemyBullets.push({
-			bx: renderX,
-			by: renderY,
-			speed: 3.2,
-		});
+		const delay = data.shotDelays?.[i] ?? 0;
+		const timeout = setTimeout(() => {
+			enemyBullets.push({
+				bx: renderX,
+				by: renderY,
+				speed: 3.2,
+			});
+		}, delay);
+		pendingBossShots.push(timeout);
 	}
 });
 
@@ -178,6 +183,10 @@ export function resetRenderedGameState() {
 	player.projectileSize = 5;
 	player.invincibility = false;
 	activeBonuses = [];
+	for (let i = 0; i < pendingBossShots.length; i++) {
+		clearTimeout(pendingBossShots[i]);
+	}
+	pendingBossShots.length = 0;
 	resetBullets();
 }
 

@@ -368,11 +368,15 @@ function emitBossPattern(session: GameSession, boss: Ennemi) {
 		? buildHardBossRandomPattern()
 		: patterns[session.bossPatternIndex % patterns.length];
 	const yPositions = pattern.map(ratio => ratio * (arenaHeight - 1));
+	const shotDelays = session.difficulty === 2
+		? yPositions.map((_y, index) => (index * 90) + Math.floor(Math.random() * 81))
+		: yPositions.map(() => 0);
 
 	session.players.forEach(socketId => {
 		io.to(socketId).emit("bossShootPattern", {
 			posX: boss.posX,
 			yPositions,
+			shotDelays,
 		});
 	});
 }
