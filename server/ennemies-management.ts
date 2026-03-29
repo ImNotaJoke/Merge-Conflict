@@ -295,9 +295,13 @@ export function hurtEnnemi(sessionId: string, index: number, damage: number) {
 
 		if (isBoss(ennemi) && Math.random() <= BOSS_STUN_CHANCE) {
 			session.bossStunnedUntilMs = Date.now() + BOSS_STUN_DURATION_MS;
+			console.log(`Server: Boss stunned in session ${sessionId} for ${BOSS_STUN_DURATION_MS}ms`);
 		}
 
 		ennemi.hurt(damage);
+		if (isBoss(ennemi)) {
+			console.log(`Server: Boss hurt in session ${sessionId}. Damage=${damage}, remainingHp=${ennemi.health}`);
+		}
 		if (ennemi.health <= 0) {
 			const ex = ennemi.posX;
 			const ey = ennemi.posY;
@@ -315,6 +319,7 @@ export function hurtEnnemi(sessionId: string, index: number, damage: number) {
 				const type = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
 				
 				const bonusId = Math.random().toString(36).substring(2, 9);
+				console.log(`Server: Spawning bonus ${bonusId} (${type}) in session ${sessionId} at (${Math.round(ex)}, ${Math.round(ey)})`);
 				
 				io.to(sessionId).emit("spawnBonus", { id: bonusId, posX: ex, posY: ey, type: type });
 			}
@@ -359,7 +364,7 @@ function resetSpawnTimer(session: GameSession) {
 	session.bossNextVolleyAtMs = 0;
 }
 
-function emitBossPattern(session: GameSession, boss: Ennemi) {
+function emitBossPattern(session: GameSession, sessionId: string, boss: Ennemi) {
 	const patterns = [
 		[0.18, 0.5, 0.82],
 		[0.28, 0.72],
@@ -372,6 +377,7 @@ function emitBossPattern(session: GameSession, boss: Ennemi) {
 	const shotDelays = session.difficulty === 2
 		? yPositions.map((_y, index) => (index * 90) + Math.floor(Math.random() * 81))
 		: yPositions.map(() => 0);
+	console.log(`Server: Boss pattern emitted in session ${sessionId}. lanes=${yPositions.length}, hardMode=${session.difficulty === 2}`);
 
 	session.players.forEach(socketId => {
 		io.to(socketId).emit("bossShootPattern", {
@@ -403,7 +409,7 @@ function autoMoveAll() {
 			const now = Date.now();
 			if (now >= session.bossStunnedUntilMs) {
 				if (session.bossVolleyRemaining > 0 && now >= session.bossNextVolleyAtMs) {
-					emitBossPattern(session, boss);
+					emitBossPattern(session, sessionId, boss);
 					session.bossVolleyRemaining -= 1;
 					if (session.bossVolleyRemaining > 0) {
 						session.bossNextVolleyAtMs = now + getBossVolleyIntervalByDifficulty(session.difficulty);

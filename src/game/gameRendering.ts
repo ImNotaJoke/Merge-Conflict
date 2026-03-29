@@ -130,10 +130,12 @@ socket.on("secondPlayerDisconnect", (socketId: string) => {
 });
 
 socket.on("spawnBonus", (data: {id: string, posX: number, posY: number, type: string}) => {
+	console.log(`Client: spawnBonus received id=${data.id}, type=${data.type}, x=${Math.round(data.posX)}, y=${Math.round(data.posY)}`);
     activeBonuses.push(new Bonus(data.id, data.posX, data.posY, data.type));
 });
 
 socket.on("applyBonus", (data: {id: string, type: string}) => {
+	console.log(`Client: applyBonus received id=${data.id}, type=${data.type}`);
     activeBonuses = activeBonuses.filter(b => b.id !== data.id);
 	bonus_type_effect_determination(data.type);
 });
@@ -153,6 +155,7 @@ socket.on("enemyShoot", (data: { posX: number, posY: number }) => {
 });
 
 socket.on("bossShootPattern", (data: { posX: number, yPositions: number[], shotDelays?: number[] }) => {
+	console.log(`Client: bossShootPattern received lanes=${data.yPositions.length}, delayed=${Boolean(data.shotDelays?.length)}`);
 	const maxRenderX = Math.max(canvas.width - BOSS_RENDER_WIDTH, 0);
 	const renderX = Math.min((data.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
 	const maxRenderY = Math.max(canvas.height - BULLET_RENDER_HEIGHT, 0);
@@ -469,6 +472,7 @@ function drawBonuses() {
         context.drawImage(bonusImage, renderX, renderY, BONUS_ITEM_RENDER_WIDTH, BONUS_ITEM_RENDER_HEIGHT);
 
         if (bonus_is_colliding(renderX, renderY)) {
+			console.log(`Client: collectBonus emit id=${bonus.id}, type=${bonus.type}`);
 			socket.emit("collectBonus", { id: bonus.id, type: bonus.type });
             activeBonuses.splice(i, 1);	
         } 

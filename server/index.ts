@@ -315,6 +315,7 @@ io.on('connection', socket => {
 		const isCoop = data?.isCoop ?? false;
 		const difficulty = Number.isFinite(data?.difficulty) ? Number(data.difficulty) : 0;
 		const sessionId = isCoop && data.roomId ? data.roomId : socket.id;
+		console.log(`Server: startPlaying from ${socket.id}. session=${sessionId}, coop=${isCoop}, difficulty=${difficulty}`);
 
 		playerSessions.set(socket.id, sessionId);
 		if (isCoop && data.roomId) {
@@ -338,6 +339,7 @@ io.on('connection', socket => {
 	socket.on("stopPlaying", () => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
+			console.log(`Server: stopPlaying from ${socket.id}. session=${sessionId}`);
 			socket.leave(sessionId);
 			stopPlaying(sessionId, socket.id);
 			playerSessions.delete(socket.id);
@@ -371,6 +373,7 @@ io.on('connection', socket => {
 	socket.on("enemyKilled", (index: number) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
+			console.log(`Server: enemyKilled requested by ${socket.id} in session ${sessionId} at index ${index}`);
 			removeEnnemi(sessionId, index);
 		}
 	});
@@ -378,6 +381,7 @@ io.on('connection', socket => {
 	socket.on("enemyHurt", (index: number, damage: number) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
+			console.log(`Server: enemyHurt from ${socket.id} in session ${sessionId}. index=${index}, damage=${damage}`);
 			hurtEnnemi(sessionId, index,damage);
 		}
 	});
@@ -404,7 +408,9 @@ io.on('connection', socket => {
 	socket.on("collectBonus", (data: { id: string, type: string }) => {
 		const sessionId = playerSessions.get(socket.id);
 		if (sessionId) {
+			console.log(`Server: collectBonus from ${socket.id} in session ${sessionId}. bonus=${data.id}, type=${data.type}`);
 			io.to(sessionId).emit("applyBonus", data);
+			console.log(`Server: applyBonus broadcast in session ${sessionId}. bonus=${data.id}, type=${data.type}`);
 		}
 	});
 
@@ -687,6 +693,7 @@ io.on('connection', socket => {
 	socket.on("multiEnemyKilled", (index: number) => {
 		const roomId = multiPlayerRooms.get(socket.id);
 		if (roomId) {
+			console.log(`Server: multiEnemyKilled by ${socket.id} in room ${roomId} at index ${index}`);
 			removeEnnemi(roomId, index);
 		}
 	});
@@ -694,6 +701,7 @@ io.on('connection', socket => {
 	socket.on("multiEnemyHurt", (index: number, damage: number) => {
 		const roomId = multiPlayerRooms.get(socket.id);
 		if (roomId) {
+			console.log(`Server: multiEnemyHurt from ${socket.id} in room ${roomId}. index=${index}, damage=${damage}`);
 			hurtEnnemi(roomId, index, damage);
 		}
 	});
@@ -701,7 +709,9 @@ io.on('connection', socket => {
 	socket.on("multiCollectBonus", (data: { id: string; type: string }) => {
 		const roomId = multiPlayerRooms.get(socket.id);
 		if (roomId) {
+			console.log(`Server: multiCollectBonus from ${socket.id} in room ${roomId}. bonus=${data.id}, type=${data.type}`);
 			io.to(roomId).emit("multiApplyBonus", data);
+			console.log(`Server: multiApplyBonus broadcast in room ${roomId}. bonus=${data.id}, type=${data.type}`);
 		}
 	});
 
