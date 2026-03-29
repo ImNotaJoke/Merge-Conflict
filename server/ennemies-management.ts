@@ -99,7 +99,8 @@ function hasBoss(session: GameSession) {
 	return session.ennemies.some((ennemi) => isBoss(ennemi));
 }
 
-function emitSessionEnemies(session: GameSession) {
+function emitSessionEnemies(session: GameSession, sessionId: string) {
+	io.to(sessionId).emit("ennemiEvent", session.ennemies);
 	session.players.forEach(socketId => {
 		io.to(socketId).emit("ennemiEvent", session.ennemies);
 	});
@@ -189,7 +190,7 @@ function spawnBoss(session: GameSession, sessionId: string) {
 	session.bossCooldownUntilMs = Date.now();
 
 	console.log(`Server: Boss spawned for session ${sessionId}`);
-	emitSessionEnemies(session);
+	emitSessionEnemies(session, sessionId);
 }
 
 function scheduleBossSpawn(session: GameSession, sessionId: string) {
@@ -266,7 +267,7 @@ function spawnEnnemi(session: GameSession, sessionId: string) {
 	);
 	session.ennemies.push(newEnnemi);
 	console.log(`Server: Spawning ennemi for session ${sessionId}. Total: ${session.ennemies.length}`);
-	emitSessionEnemies(session);
+	emitSessionEnemies(session, sessionId);
 	
 }
 
@@ -280,7 +281,7 @@ export function removeEnnemi(sessionId: string, index: number) {
 		if (removed && isBoss(removed)) {
 			handleBossDefeat(session, sessionId);
 		}
-		emitSessionEnemies(session);
+		emitSessionEnemies(session, sessionId);
 	}
 }
 
@@ -382,7 +383,7 @@ function emitBossPattern(session: GameSession, boss: Ennemi) {
 }
 
 function autoMoveAll() {
-	sessions.forEach((session) => {
+	sessions.forEach((session, sessionId) => {
 		if (!session.playing) return;
 
 		session.ennemies.forEach((ennemi) => {
@@ -425,7 +426,7 @@ function autoMoveAll() {
 			}
 		}
 
-		emitSessionEnemies(session);
+		emitSessionEnemies(session, sessionId);
 	});
 }
 setInterval(autoMoveAll, 100);
@@ -452,7 +453,7 @@ export function startPlaying(sessionId: string, socketId: string, isCoop: boolea
 		scheduleBossSpawn(session, sessionId);
 		console.log(`[Session ${sessionId}] Game started (coop: ${isCoop})`);
 	} else {
-		emitSessionEnemies(session);
+		emitSessionEnemies(session, sessionId);
 		console.log(`[Session ${sessionId}] Player ${socketId} joined existing game`);
 	}
 }
