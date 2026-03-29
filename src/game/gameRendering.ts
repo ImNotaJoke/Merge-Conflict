@@ -22,6 +22,8 @@ export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
 const ENNEMI_RENDER_WIDTH = 64;
 const ENNEMI_RENDER_HEIGHT = 64;
+const BOSS_IMAGE_ID = 3;
+const BOSS_RENDER_WIDTH = 220;
 const SERVER_ARENA_WIDTH = 1980;
 const SERVER_ARENA_HEIGHT = 720;
 const BONUS_ITEM_RENDER_WIDTH = 32;
@@ -36,10 +38,12 @@ export const bonus_pickup_sound = new Audio('../../assets/sounds/bonus_pickup.wa
 export const player: Player = new Player(0, 0);
 const image = new Map<string, HTMLImageElement>();
 export const bonusImage = new Image();
-const ennemiImages = [new Image(), new Image(), new	Image()];
+const ennemiImages = [new Image(), new Image(), new	Image(), new Image()];
 let ennemies: Ennemi[] = [];
 let activeBonuses: Bonus[] = [];
 let lastEmittedHealth = 3;
+const pendingBossShots: ReturnType<typeof setTimeout>[] = [];
+let bossIncomingWarningUntilMs = 0;
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
@@ -80,6 +84,7 @@ image.get('doomguy-orange')!.src = '/assets/character/doomGuy/orange.png';
 ennemiImages[0].src = '../../assets/character/ennemi/mob1/mob1.png';
 ennemiImages[1].src = '../../assets/character/ennemi/mob1/mob12.png';
 ennemiImages[2].src = '../../assets/character/ennemi/mob1/mob_tir.png'
+ennemiImages[3].src = '../../assets/character/ennemi/boss/Boss.png';
 player.models.push(image.get(skinSelect.value)!);
 player.models[0].addEventListener('load', () => {
 	requestAnimationFrame(render);
@@ -127,10 +132,12 @@ socket.on("secondPlayerDisconnect", (socketId: string) => {
 });
 
 socket.on("spawnBonus", (data: {id: string, posX: number, posY: number, type: string}) => {
+	console.log(`Client: spawnBonus received id=${data.id}, type=${data.type}, x=${Math.round(data.posX)}, y=${Math.round(data.posY)}`);
     activeBonuses.push(new Bonus(data.id, data.posX, data.posY, data.type));
 });
 
 socket.on("applyBonus", (data: {id: string, type: string}) => {
+	console.log(`Client: applyBonus received id=${data.id}, type=${data.type}`);
     activeBonuses = activeBonuses.filter(b => b.id !== data.id);
 	bonus_type_effect_determination(data.type);
 });
@@ -144,8 +151,36 @@ socket.on("enemyShoot", (data: { posX: number, posY: number }) => {
 
 	enemyBullets.push({
 		bx: renderX, 
-		by: renderY + (ENNEMI_RENDER_HEIGHT / 2) - (BULLET_RENDER_HEIGHT / 2)
+		by: renderY + (ENNEMI_RENDER_HEIGHT / 2) - (BULLET_RENDER_HEIGHT / 2),
+		speed: 5.7,
 	});
+});
+
+socket.on("bossShootPattern", (data: { posX: number, yPositions: number[], shotDelays?: number[] }) => {
+	console.log(`Client: bossShootPattern received lanes=${data.yPositions.length}, delayed=${Boolean(data.shotDelays?.length)}`);
+	const maxRenderX = Math.max(canvas.width - BOSS_RENDER_WIDTH, 0);
+	const renderX = Math.min((data.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX);
+	const maxRenderY = Math.max(canvas.height - BULLET_RENDER_HEIGHT, 0);
+
+	for (let i = 0; i < data.yPositions.length; i++) {
+		const shotY = data.yPositions[i];
+		const renderY = Math.min((shotY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+		const delay = data.shotDelays?.[i] ?? 0;
+		const timeout = setTimeout(() => {
+			enemyBullets.push({
+				bx: renderX,
+				by: renderY,
+				speed: 3.2,
+			});
+		}, delay);
+		pendingBossShots.push(timeout);
+	}
+});
+
+socket.on("bossIncomingWarning", (data: { remainingMs?: number }) => {
+	const duration = Math.max(0, data.remainingMs ?? 5000);
+	bossIncomingWarningUntilMs = Date.now() + duration;
+	console.log(`Client: bossIncomingWarning received, duration=${duration}ms`);
 });
 
 export function resetRenderedGameState() {
@@ -159,6 +194,11 @@ export function resetRenderedGameState() {
 	player.projectileSize = 5;
 	player.invincibility = false;
 	activeBonuses = [];
+	for (let i = 0; i < pendingBossShots.length; i++) {
+		clearTimeout(pendingBossShots[i]);
+	}
+	pendingBossShots.length = 0;
+	bossIncomingWarningUntilMs = 0;
 	resetBullets();
 }
 
@@ -222,8 +262,27 @@ function render() {
 	enemyBullets.forEach(balle => {
 		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT)
 	});
+	drawBossIncomingWarning();
 	checkEnemyBulletsCollision();
 	requestAnimationFrame(render);
+}
+
+function drawBossIncomingWarning() {
+	if (Date.now() > bossIncomingWarningUntilMs) return;
+	if (Math.floor(Date.now() / 250) % 2 === 0) return;
+
+	context.save();
+	context.font = "bold 44px Arial";
+	context.textAlign = "right";
+	context.textBaseline = "middle";
+	context.strokeStyle = "#120000";
+	context.fillStyle = "#ff3b3b";
+	context.lineWidth = 5;
+	const textX = canvas.width - 20;
+	const textY = canvas.height * 0.5;
+	context.strokeText("BOSS IMMINENT !", textX, textY);
+	context.fillText("BOSS IMMINENT !", textX, textY);
+	context.restore();
 }
 
 function drawPlayerLabel(renderX: number, renderY: number, label: string) {
@@ -311,18 +370,19 @@ function drawMultiplayerPlayers() {
 	});
 }
 
-function bulletsAreColliding(posX: number, posY: number) {
+function bulletsAreColliding(posX: number, posY: number, isBossTarget: boolean, ennemiWidth: number, ennemiHeight: number) {
 	for (let i = activeBullets.length - 1; i >= 0; i--) {
 		const balle = activeBullets[i];
 		const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
 		const bulletCenterY = balle.by + BULLET_RENDER_HEIGHT / 2;
-		const ennemiCenterX = posX + ENNEMI_RENDER_WIDTH / 2;
-		const ennemiCenterY = posY + ENNEMI_RENDER_HEIGHT / 2;
+		const ennemiCenterX = posX + ennemiWidth / 2;
+		const ennemiCenterY = posY + ennemiHeight / 2;
 		const diffX = Math.abs(bulletCenterX - ennemiCenterX);
 		const diffY = Math.abs(bulletCenterY - ennemiCenterY);
 
-		if (diffX < (BULLET_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) / 2 &&
-			diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2) {
+		if (isBossTarget
+			? diffX < (BULLET_RENDER_WIDTH + ennemiWidth) / 2
+			: diffX < (BULLET_RENDER_WIDTH + ennemiWidth) / 2 && diffY < (BULLET_RENDER_HEIGHT + ennemiHeight) / 2) {
 			activeBullets.splice(i, 1);
 			return true;
 		}
@@ -332,13 +392,14 @@ function bulletsAreColliding(posX: number, posY: number) {
 		const balle = secondPlayerBullets[i];
 		const bulletCenterX = balle.bx + BULLET_RENDER_WIDTH / 2;
 		const bulletCenterY = balle.by + BULLET_RENDER_HEIGHT / 2;
-		const ennemiCenterX = posX + ENNEMI_RENDER_WIDTH / 2;
-		const ennemiCenterY = posY + ENNEMI_RENDER_HEIGHT / 2;
+		const ennemiCenterX = posX + ennemiWidth / 2;
+		const ennemiCenterY = posY + ennemiHeight / 2;
 		const diffX = Math.abs(bulletCenterX - ennemiCenterX);
 		const diffY = Math.abs(bulletCenterY - ennemiCenterY);
 
-		if (diffX < (BULLET_RENDER_WIDTH + ENNEMI_RENDER_WIDTH) / 2 &&
-			diffY < (BULLET_RENDER_HEIGHT + ENNEMI_RENDER_HEIGHT) / 2) {
+		if (isBossTarget
+			? diffX < (BULLET_RENDER_WIDTH + ennemiWidth) / 2
+			: diffX < (BULLET_RENDER_WIDTH + ennemiWidth) / 2 && diffY < (BULLET_RENDER_HEIGHT + ennemiHeight) / 2) {
 			secondPlayerBullets.splice(i, 1);
 			return true;
 		}
@@ -368,7 +429,7 @@ function checkEnemyBulletsCollision() {
 				
 				if (player.health > 0) {
 					player_hurt_sound.currentTime = 0;
-					player_hurt_sound.play();
+					playAudioSafely(player_hurt_sound);
 					player.takeHealth();
 					updateHealth();
 					emitHealthUpdate();
@@ -400,21 +461,21 @@ function bonus_type_effect_determination(type: string) {
 		case "attack":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.projectileDamage *= 2;
 			setTimeout(() => { player.projectileDamage = player.projectileDamage / 2; }, 10000);
 			break;
 		case "speed":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.shootSpeed = 25;
 			setTimeout(() => { player.shootSpeed = 10; }, 10000);
 			break;
 		case "invincibility":
 			bonusDisplayUpdate(type);
 			bonus_pickup_sound.currentTime = 0;
-			bonus_pickup_sound.play();
+			playAudioSafely(bonus_pickup_sound);
 			player.invincibility = true;
 			setTimeout(() => { player.invincibility = false; }, 5000);
 			break;	
@@ -440,27 +501,30 @@ function drawBonuses() {
         context.drawImage(bonusImage, renderX, renderY, BONUS_ITEM_RENDER_WIDTH, BONUS_ITEM_RENDER_HEIGHT);
 
         if (bonus_is_colliding(renderX, renderY)) {
+			console.log(`Client: collectBonus emit id=${bonus.id}, type=${bonus.type}`);
 			socket.emit("collectBonus", { id: bonus.id, type: bonus.type });
             activeBonuses.splice(i, 1);	
         } 
         else if (bonus.posY > SERVER_ARENA_HEIGHT) {
             activeBonuses.splice(i, 1);
         }
-    }
+    }  
 }
 
 function drawEnnemies() {
-	const maxRenderX = Math.max(canvas.width - ENNEMI_RENDER_WIDTH, 0);
-	const maxRenderY = Math.max(canvas.height - ENNEMI_RENDER_HEIGHT, 0);
-
 	if (isSpectatorMode) {
 		for (let i = ennemies.length - 1; i >= 0; i--) {
 			const ennemi = ennemies[i];
 			if (!ennemi) continue;
-			const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX + ENNEMI_RENDER_WIDTH);
-			const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+			const isBossTarget = ennemi.imageId === BOSS_IMAGE_ID;
+			const ennemiWidth = isBossTarget ? BOSS_RENDER_WIDTH : ENNEMI_RENDER_WIDTH;
+			const ennemiHeight = isBossTarget ? canvas.height : ENNEMI_RENDER_HEIGHT;
+			const ennemiMaxRenderX = Math.max(canvas.width - ennemiWidth, 0);
+			const ennemiMaxRenderY = Math.max(canvas.height - ennemiHeight, 0);
+			const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * ennemiMaxRenderX, ennemiMaxRenderX + ennemiWidth);
+			const renderY = isBossTarget ? 0 : Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * ennemiMaxRenderY, ennemiMaxRenderY);
 			const ennemiImage = ennemiImages[ennemi.imageId] ?? ennemiImages[0];
-			context.drawImage(ennemiImage, renderX, renderY, ENNEMI_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT);
+			context.drawImage(ennemiImage, renderX, renderY, ennemiWidth, ennemiHeight);
 		}
 		return;
 	}
@@ -469,10 +533,15 @@ function drawEnnemies() {
 		const ennemi = ennemies[i];
 		if (!ennemi) continue;
 
-		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * maxRenderX, maxRenderX + ENNEMI_RENDER_WIDTH);
-		const renderY = Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * maxRenderY, maxRenderY);
+		const isBossTarget = ennemi.imageId === BOSS_IMAGE_ID;
+		const ennemiWidth = isBossTarget ? BOSS_RENDER_WIDTH : ENNEMI_RENDER_WIDTH;
+		const ennemiHeight = isBossTarget ? canvas.height : ENNEMI_RENDER_HEIGHT;
+		const ennemiMaxRenderX = Math.max(canvas.width - ennemiWidth, 0);
+		const ennemiMaxRenderY = Math.max(canvas.height - ennemiHeight, 0);
+		const renderX = Math.min((ennemi.posX / SERVER_ARENA_WIDTH) * ennemiMaxRenderX, ennemiMaxRenderX + ennemiWidth);
+		const renderY = isBossTarget ? 0 : Math.min((ennemi.posY / SERVER_ARENA_HEIGHT) * ennemiMaxRenderY, ennemiMaxRenderY);
 
-		if (bulletsAreColliding(renderX, renderY)) {
+		if (bulletsAreColliding(renderX, renderY, isBossTarget, ennemiWidth, ennemiHeight)) {
 			if (isMultiplayerMode) {
 				sendMultiEnemyHurt(i, player.projectileDamage);
 			} else {
@@ -480,7 +549,7 @@ function drawEnnemies() {
 			}
 			ennemi.health -= player.projectileDamage;
 			ennemy_hit_sound.currentTime = 0;
-			ennemy_hit_sound.play();
+			playAudioSafely(ennemy_hit_sound);
 			if (ennemi.health <= 0) {
 				if (isMultiplayerMode) {
 					sendMultiEnemyKilled(i);
@@ -488,22 +557,25 @@ function drawEnnemies() {
 					socket.emit("enemyKilled");
 				}
 				ennemy_death_sound.currentTime = 0;
-				ennemy_death_sound.play();
+				playAudioSafely(ennemy_death_sound);
 			}
 		}
 
 		if (areColliding(renderX, renderY)) {
 			player_hurt_sound.currentTime = 0;
-			player_hurt_sound.play();
+			playAudioSafely(player_hurt_sound);
 			player.takeHealth();
 			updateHealth();
 			emitHealthUpdate();
-			ennemies.splice(i, 1);
 
-			if (isMultiplayerMode) {
-				sendMultiEnemyKilled(i);
-			} else {
-				socket.emit("enemyKilled", i);
+			if (!isBossTarget) {
+				ennemies.splice(i, 1);
+
+				if (isMultiplayerMode) {
+					sendMultiEnemyKilled(i);
+				} else {
+					socket.emit("enemyKilled", i);
+				}
 			}
 
 			if (!player.verifyHealth()) {
@@ -537,7 +609,7 @@ function drawEnnemies() {
 		}
 
 		const ennemiImage = ennemiImages[ennemi.imageId] ?? ennemiImages[0];
-		context.drawImage(ennemiImage, renderX, renderY, ENNEMI_RENDER_WIDTH, ENNEMI_RENDER_HEIGHT);
+		context.drawImage(ennemiImage, renderX, renderY, ennemiWidth, ennemiHeight);
 	}
 }
 
@@ -551,10 +623,12 @@ function resampleCanvas() {
 }
 
 function pauseAudio(audio: HTMLAudioElement) {
-	let audioPlaying = audio.play();
-	if(audioPlaying !== undefined) {
-		audioPlaying.then(_ => {
-			audio.pause();
-		})
+	audio.pause();
+}
+
+function playAudioSafely(audio: HTMLAudioElement) {
+	const audioPlaying = audio.play();
+	if (audioPlaying !== undefined) {
+		void audioPlaying.catch(() => undefined);
 	}
 }

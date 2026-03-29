@@ -20,7 +20,7 @@ export let xb: number = 0,
 
 export const activeBullets: { bx: number, by: number }[] = [];
 export const secondPlayerBullets: { bx: number, by: number }[] = [];
-export const enemyBullets: { bx: number, by: number }[] = [];
+export const enemyBullets: { bx: number, by: number, speed?: number }[] = [];
 
 function bulletSpawn() {
     if (isSpectatorMode) return;
@@ -84,9 +84,10 @@ window.addEventListener("multiPlayerShot", (event: Event) => {
     });
 });
 
-function updateBulletArray(bulletsArray: { bx: number, by: number }[], speed: number, direction: 1 | -1) {
+function updateBulletArray(bulletsArray: { bx: number, by: number, speed?: number }[], speed: number, direction: 1 | -1, usePerBulletSpeed: boolean = false) {
     for (let i = 0; i < bulletsArray.length; i++) {
-        bulletsArray[i].bx += speed * direction;
+        const currentSpeed = usePerBulletSpeed ? (bulletsArray[i].speed ?? speed) : speed;
+        bulletsArray[i].bx += currentSpeed * direction;
         
         // On supprime la balle si elle sort de l'écran
         if (activeBullets[i] && activeBullets[i].bx > canvas.width + 100) {
@@ -107,7 +108,7 @@ function updateBulletArray(bulletsArray: { bx: number, by: number }[], speed: nu
 export function updateBullets() {
     updateBulletArray(activeBullets, player.shootSpeed, 1);
     updateBulletArray(secondPlayerBullets, player.shootSpeed, 1);
-    updateBulletArray(enemyBullets, 7, -1); 
+    updateBulletArray(enemyBullets, 5.7, -1, true);
 }
 export function resetBullets() {
     activeBullets.length = 0;
