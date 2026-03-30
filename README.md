@@ -11,7 +11,7 @@
 Dans tous les modes de jeu, un boss apparaît toutes les deux minutes. Son comportement évolue en fonction de la difficulté.  
 
 ## Diagramme de séquence
-*Intégrer le travail de Seb*
+![Diagramme de séquence](./JSAE_Diagramme_Sequence.svg)
 
 ## Difficultés techniques
 Pendant ce long périple qu'a été ce projet, nous avons été confronté à de nombreuses difficultés techniques que nous avons su surpasser du mieux possible. Parmi elles :
