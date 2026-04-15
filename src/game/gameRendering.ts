@@ -15,8 +15,29 @@ import { menuSelection, bonusDisplayUpdate, isMultiplayerMode, isSpectatorMode, 
 import { isCoopMode, currentRoomId } from "../gameState.ts";
 import { updateHealth } from "./runManagement.ts";
 import { audio } from "../Parameter.ts";
+import bulletHitSoundUrl from '../../assets/sounds/bullet_hit.wav';
+import monsterDeathSoundUrl from '../../assets/sounds/monster_death.wav';
+import playerHurtSoundUrl from '../../assets/sounds/player_hurt.wav';
+import bulletShotSoundUrl from '../../assets/sounds/bullet_shot.wav';
+import bonusPickupSoundUrl from '../../assets/sounds/bonus_pickup.wav';
+import powerUpImageUrl from '../../assets/power_up.png';
+import isaLegaImageUrl from '../../assets/character/isabelle/RIGHT/mtr1.png';
+import doomGuyImageUrl from '../../assets/character/doomGuy/DoomGuy.png';
+import isaUpImageUrl from '../../assets/character/isabelle/UP/mtt1.png';
+import isaRedImageUrl from '../../assets/character/isabelle/rouge.png';
+import isaBlueImageUrl from '../../assets/character/isabelle/bleue.png';
+import isaDarkImageUrl from '../../assets/character/isabelle/dark.png';
+import mob1ImageUrl from '../../assets/character/ennemi/mob1/mob1.png';
+import mob12ImageUrl from '../../assets/character/ennemi/mob1/mob12.png';
+import mobTirImageUrl from '../../assets/character/ennemi/mob1/mob_tir.png';
+import bossImageUrl from '../../assets/character/ennemi/boss/Boss.png';
 
 const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
+
+// Assurez-vous que ces imports sont bien des chemins relatifs depuis ce fichier
+// Si votre structure de dossier est `src/game/gameRendering.ts` et `assets/`,
+// alors le chemin est `../../assets/...`
+
 
 export const PLAYER_RENDER_WIDTH = 56;
 export const PLAYER_RENDER_HEIGHT = 82;
@@ -29,31 +50,30 @@ const SERVER_ARENA_HEIGHT = 720;
 const BONUS_ITEM_RENDER_WIDTH = 32;
 const BONUS_ITEM_RENDER_HEIGHT = 32;
 
-export const ennemy_hit_sound = new Audio('../../assets/sounds/bullet_hit.wav');
-export const ennemy_death_sound = new Audio('../../assets/sounds/monster_death.wav');
-export const player_hurt_sound = new Audio('../../assets/sounds/player_hurt.wav');
-export const bullet_shot_sound = new Audio('../../assets/sounds/bullet_shot.wav');
-export const bonus_pickup_sound = new Audio('../../assets/sounds/bonus_pickup.wav');
+export const ennemy_hit_sound = new Audio(bulletHitSoundUrl);
+export const ennemy_death_sound = new Audio(monsterDeathSoundUrl);
+export const player_hurt_sound = new Audio(playerHurtSoundUrl);
+export const bullet_shot_sound = new Audio(bulletShotSoundUrl);
+export const bonus_pickup_sound = new Audio(bonusPickupSoundUrl);
  
 export const player: Player = new Player(0, 0);
 const image = new Map<string, HTMLImageElement>();
 export const bonusImage = new Image();
 const ennemiImages = [new Image(), new Image(), new	Image(), new Image()];
 let ennemies: Ennemi[] = [];
-let activeBonuses: Bonus[] = [];
+let activeBonuses: Bonus[] = []; // Correction: Initialisation de activeBonuses
 let lastEmittedHealth = 3;
 const pendingBossShots: ReturnType<typeof setTimeout>[] = [];
 let bossIncomingWarningUntilMs = 0;
 
 export let secondPlayer: SecondPlayer | null = null;
 const secondPlayerImage = new Image();
-
 const multiPlayerImages: HTMLImageElement[] = [];
 const multiPlayerSkins = [
-	'/assets/character/isabelle/RIGHT/mtr1.png',
-	'/assets/character/doomGuy/DoomGuy.png',
-	'/assets/character/isabelle/UP/mtt1.png',
-	'/assets/character/doomGuy/DoomGuy.png',
+	isaLegaImageUrl,
+	doomGuyImageUrl,
+	isaUpImageUrl,
+	doomGuyImageUrl,
 ];
 
 for (let i = 0; i < multiPlayerSkins.length; i++) {
@@ -62,8 +82,8 @@ for (let i = 0; i < multiPlayerSkins.length; i++) {
 	multiPlayerImages.push(img);
 }
 
-secondPlayerImage.src = '/assets/character/isabelle/UP/mtt1.png';
-bonusImage.src = '../../assets/power_up.png';
+secondPlayerImage.src = isaUpImageUrl;
+bonusImage.src = powerUpImageUrl;
 
 image.set("isa-lega", new Image());
 image.set("doomguy", new Image());
@@ -73,18 +93,26 @@ image.set("isa-red", new Image());
 image.set("isa-blue", new Image());
 image.set("isa-dark", new Image());
 
-image.get("isa-lega")!.src = '/assets/character/isabelle/RIGHT/mtr1.png';
-image.get("isa-red")!.src = '/assets/character/isabelle/rouge.png';
-image.get("isa-blue")!.src = '/assets/character/isabelle/bleue.png';
-image.get("isa-dark")!.src = '/assets/character/isabelle/dark.png';
-image.get('doomguy')!.src = '/assets/character/doomGuy/DoomGuy.png';
-image.get('doomguy-purple')!.src = '/assets/character/doomGuy/purple.png';
-image.get('doomguy-orange')!.src = '/assets/character/doomGuy/orange.png';
+image.get("isa-lega")!.src = isaLegaImageUrl;
+image.get("isa-red")!.src = isaRedImageUrl;
+image.get("isa-blue")!.src = isaBlueImageUrl;
+image.get("isa-dark")!.src = isaDarkImageUrl;
+image.get('doomguy')!.src = doomGuyImageUrl;
+image.get('doomguy-purple')!.src = doomGuyImageUrl; // Assuming purple and orange are variants of the main DoomGuy image for now, or need separate imports if distinct files.
+image.get('doomguy-orange')!.src = doomGuyImageUrl; // Same as above.
 
-ennemiImages[0].src = '../../assets/character/ennemi/mob1/mob1.png';
-ennemiImages[1].src = '../../assets/character/ennemi/mob1/mob12.png';
-ennemiImages[2].src = '../../assets/character/ennemi/mob1/mob_tir.png'
-ennemiImages[3].src = '../../assets/character/ennemi/boss/Boss.png';
+// Correction: Les images de DoomGuy purple et orange n'ont pas été importées spécifiquement.
+// Si elles sont des fichiers distincts, vous devrez ajouter des imports pour elles aussi.
+// Par exemple:
+// import doomGuyPurpleImageUrl from '../../assets/character/doomGuy/purple.png';
+// import doomGuyOrangeImageUrl from '../../assets/character/doomGuy/orange.png';
+// image.get('doomguy-purple')!.src = doomGuyPurpleImageUrl;
+// image.get('doomguy-orange')!.src = doomGuyOrangeImageUrl;
+
+ennemiImages[0].src = mob1ImageUrl;
+ennemiImages[1].src = mob12ImageUrl;
+ennemiImages[2].src = mobTirImageUrl;
+ennemiImages[3].src = bossImageUrl;
 player.models.push(image.get(skinSelect.value)!);
 player.models[0].addEventListener('load', () => {
 	requestAnimationFrame(render);

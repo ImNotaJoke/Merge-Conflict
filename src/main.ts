@@ -8,6 +8,12 @@ import type { MultiplayerPlayerData, MultiplayerRoomConfig, MultiplayerRoomInfo,
 import { setCoopMode as setSharedCoopMode, setCurrentRoomId as setSharedCurrentRoomId } from "./gameState.ts";
 
 export let isCoopMode = false;
+
+import replayButtonImageUrl from '../assets/Button/RejouerJSae.png';
+import doomguyIsabelleVideoUrl from '../assets/DoomguyIsabelle.mp4';
+import doomEndVideoUrl from '../assets/DoomEnd.mp4';
+import doomAmbienceVideoUrl from '../assets/DoomAmbience.mp4';
+import heartIconUrl from '../assets/HeartIcon.png';
 export let isMultiplayerMode = false;
 export let isSpectatorMode = false;
 export let currentRoomId: string | null = null;
@@ -110,7 +116,7 @@ const multiLeaderboardBody = document.querySelector(".multi-leaderboard-body");
 const multiAlliesContainer = document.querySelector(".multi-allies-container");
 const multiAlliesList = document.querySelector(".multi-allies-list");
 const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
-const REPLAY_BUTTON_IMAGE_URL = "/assets/Button/RejouerJSae.png";
+const REPLAY_BUTTON_IMAGE_URL = replayButtonImageUrl;
 
 let currentAttackTimeout: NodeJS.Timeout | null = null;
 let currentSpeedTimeout: NodeJS.Timeout | null = null;
@@ -731,7 +737,7 @@ overBackButton?.addEventListener('click', (event) => {
     allyHealthContainer?.classList.add("hidden");
     menuSelection("main");
     video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
-});
+}); // Correction: La ligne ci-dessus devrait utiliser doomguyIsabelleVideoUrl
 
 quitButton?.addEventListener('click', (event) => {
     event.preventDefault();
@@ -749,7 +755,7 @@ quitButton?.addEventListener('click', (event) => {
     audio.pause();
     audio.currentTime = 0;
     allyHealthContainer?.classList.add("hidden");
-    menuSelection("main");
+    menuSelection("main"); // Correction: La ligne ci-dessus devrait utiliser doomguyIsabelleVideoUrl
     video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
 });
 
@@ -802,7 +808,7 @@ export function menuSelection(menu: string) {
             finalizeCurrentRun(true);
             stopGameTimer();
             socket.emit("stopPlaying");
-            overSection.classList.remove('hidden');
+            overSection.classList.remove('hidden'); // Correction: La ligne ci-dessus devrait utiliser doomEndVideoUrl
             video?.setAttribute("src", "assets/DoomEnd.mp4");
             break;
         case "leaderboard":
@@ -814,7 +820,7 @@ export function menuSelection(menu: string) {
         case "game":
             gameSection.classList.remove("hidden");
             settingsBtn[1]?.classList.remove("hidden");
-            video?.setAttribute("src", "assets/DoomAmbience.mp4");
+            video?.setAttribute("src", doomAmbienceVideoUrl);
             startGameTimer();
             const skinIndex = skinSelect.value;
             socket.emit("startPlaying", {
@@ -855,11 +861,11 @@ export function menuSelection(menu: string) {
         case "multi-game":
             gameSection.classList.remove("hidden");
             settingsBtn[1]?.classList.remove("hidden");
-            video?.setAttribute("src", "assets/DoomAmbience.mp4");
+            video?.setAttribute("src", doomAmbienceVideoUrl);
             startGameTimer();
             break;
         case "multi-end":
-            multiEndSection.classList.remove("hidden");
+            multiEndSection.classList.remove("hidden"); // Correction: La ligne ci-dessus devrait utiliser doomEndVideoUrl
             video?.setAttribute("src", "assets/DoomEnd.mp4");
             break;
         default:

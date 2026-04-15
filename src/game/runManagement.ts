@@ -3,6 +3,8 @@ import { resetRenderedGameState } from "./gameRendering.ts";
 import { resetPlayerPosition } from "./playerMovement.ts";
 import { socket } from "../socket.ts";
 import { player } from "./gameRendering.ts";
+import heartIconUrl from '../../assets/HeartIcon.png';
+import heartIconEmptyUrl from '../../assets/HeartIconEmpty.png';
 import { difficulty } from "../main.ts";
 import { isCoopMode } from "../gameState.ts";
 
@@ -128,7 +130,7 @@ function updateInGameStats(elapsedSeconds: number) {
 }
 
 export function updateHealth() {
-    healthContainer.innerHTML = `<img class="game-stat-heart" src="/assets/HeartIcon.png" alt="coeur de vie plein" height="50px">`.repeat(player.health) + `<img class="game-stat-heart" src="/assets/HeartIconEmpty.png" alt="coeur de vie vide" height="50px">`.repeat(maxHealth - player.health);
+    healthContainer.innerHTML = `<img class="game-stat-heart" src="${heartIconUrl}" alt="coeur de vie plein" height="50px">`.repeat(player.health) + `<img class="game-stat-heart" src="${heartIconEmptyUrl}" alt="coeur de vie vide" height="50px">`.repeat(maxHealth - player.health);
 }
 
 function formatDuration(totalSeconds: number) {
