@@ -1,15 +1,27 @@
 import http from 'http';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Server as IOServer } from 'socket.io';
 import type { LeaderboardEntry, MultiplayerPlayerData, MultiplayerRoomData, MultiplayerRoomConfig, MultiplayerRoomInfo, MultiplayerEndGameStats } from '../common/types.ts';
 import { startPlaying, stopPlaying, removeEnnemi, hurtEnnemi, playerDisconnected, startMultiplayerGame, stopMultiplayerGame } from './ennemies-management.ts';
 import { saveScore, getSeparateLeaderboards } from './leaderboard-storage.ts';
 
-const name: string = process.argv[2];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const httpServer = http.createServer((_req, res) => {
-	res.statusCode = 200;
-	res.setHeader('Content-Type', 'text/html');
-	res.end(`Think ${name}, Think !\nPWD: ${process.env['PWD']}`);
+const app = express();
+const httpServer = http.createServer(app);
+
+// Définir le chemin vers le dossier de build du client
+const clientBuildPath = path.join(__dirname, '..', '..', 'dist');
+
+// Servir les fichiers statiques du frontend depuis le dossier 'dist'
+app.use(express.static(clientBuildPath));
+
+// Pour toutes les autres routes, renvoyer index.html pour la navigation côté client
+app.get('*', (_req, res) => {
+	res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 const connections: string[] = [];
@@ -109,7 +121,26 @@ httpServer.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}/`);
 });
 
-export const io = new IOServer(httpServer, { cors: { origin: true } });
+const allowedOrigins = [
+    "http://localhost:8000", // Port de dev client possible
+    "http://localhost:5173", // Port de dev client Vite par défaut
+    "https://merge-conflict.sulivaportefolio.live"
+];
+
+export const io = new IOServer(httpServer, {
+	cors: {
+		origin: (origin, callback) => {
+			// autoriser les requêtes sans origine (ex: apps mobiles, tests)
+			if (!origin) return callback(null, true);
+			if (allowedOrigins.indexOf(origin) === -1) {
+				const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+				return callback(new Error(msg), false);
+			}
+			return callback(null, true);
+		},
+		methods: ["GET", "POST"]
+	}
+});
 
 io.on('connection', socket => {
 	console.log(`Nouvelle connexion du client ${socket.id}`);

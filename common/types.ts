@@ -41,7 +41,7 @@ export class Player {
     posY:number;
     pseudo: string;
     health: number;
-    killedEnnemies;
+    killedEnnemies: Map<number, number>;
     invincibility:boolean;
     shootSpeed: number;
     projectileSize: number;

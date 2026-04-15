@@ -6,22 +6,24 @@
   "type": "module",
   "license": "UNLICENSED",
   "scripts": {
+    "start": "tsx server/index.ts",
+    "build": "vite build && tsc",
     "client:start": "vite --port=8000",
-    "client:build": "tsc && vite build",
-    "client:preview": "vite preview",
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "server": "node .",
     "server:watch": "node --watch ."
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.3.3",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "tsx": "^4.19.0"
   }
 }

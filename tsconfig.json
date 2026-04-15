@@ -8,19 +8,18 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
+    "outDir": "./dist",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "noEmit": false,
 
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "server", "common"]
+  "include": ["server", "common"]
 }
