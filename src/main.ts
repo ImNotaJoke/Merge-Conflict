@@ -14,6 +14,7 @@ import doomguyIsabelleVideoUrl from '../assets/DoomguyIsabelle.mp4';
 import doomEndVideoUrl from '../assets/DoomEnd.mp4';
 import doomAmbienceVideoUrl from '../assets/DoomAmbience.mp4';
 import heartIconUrl from '../assets/HeartIcon.png';
+import heartIconEmptyUrl from '../assets/HeartIconEmpty.png';
 export let isMultiplayerMode = false;
 export let isSpectatorMode = false;
 export let currentRoomId: string | null = null;
@@ -148,6 +149,7 @@ function applyReplayButtonImageIfAvailable() {
 
 initializeEventListeners();
 applyReplayButtonImageIfAvailable();
+video?.setAttribute("src", doomguyIsabelleVideoUrl);
 
 export function pauseVideo() {
     if (!video) return;
@@ -276,7 +278,7 @@ multiBackMenuBtn?.addEventListener('click', (event) => {
     setSpectatorMode(false);
     multiplayerPlayers.clear();
     menuSelection("main");
-    video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
+    video?.setAttribute("src", doomguyIsabelleVideoUrl);
 });
 
 function refreshMultiRoomsList() {
@@ -638,7 +640,7 @@ function updateMultiAlliesDisplay() {
 
         let heartsHtml = "";
         for (let i = 0; i < p.health; i++) {
-            heartsHtml += `<img class="ally-heart-mini" src="/assets/HeartIcon.png" alt="coeur" height="20px">`;
+            heartsHtml += `<img class="ally-heart-mini" src="${heartIconUrl}" alt="coeur" height="20px">`;
         }
 
         allyDiv.innerHTML = `
@@ -723,10 +725,10 @@ export function sendMultiEnemyHurt(index: number, damage: number) {
 function updateAllyHealth(health: number) {
     let html = "";
     for(let i = 0; i < health; i++) {
-        html += `<img class="game-stat-heart ally-heart" src="/assets/HeartIcon.png" alt="coeur allié" height="50px">`;
+        html += `<img class="game-stat-heart ally-heart" src="${heartIconUrl}" alt="coeur allié" height="50px">`;
     }
     for(let i = 0; i < maxHealth - health; i++) {
-        html += `<img class="game-stat-heart ally-heart" src="/assets/HeartIconEmpty.png" alt="coeur allié vide" height="50px">`;
+        html += `<img class="game-stat-heart ally-heart" src="${heartIconEmptyUrl}" alt="coeur allié vide" height="50px">`;
     }
     allyHearts.innerHTML = html;
 }
@@ -736,8 +738,8 @@ overBackButton?.addEventListener('click', (event) => {
     resetCurrentGame();
     allyHealthContainer?.classList.add("hidden");
     menuSelection("main");
-    video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
-}); // Correction: La ligne ci-dessus devrait utiliser doomguyIsabelleVideoUrl
+    video?.setAttribute("src", doomguyIsabelleVideoUrl);
+});
 
 quitButton?.addEventListener('click', (event) => {
     event.preventDefault();
@@ -755,8 +757,8 @@ quitButton?.addEventListener('click', (event) => {
     audio.pause();
     audio.currentTime = 0;
     allyHealthContainer?.classList.add("hidden");
-    menuSelection("main"); // Correction: La ligne ci-dessus devrait utiliser doomguyIsabelleVideoUrl
-    video?.setAttribute("src", "assets/DoomguyIsabelle.mp4");
+    menuSelection("main");
+    video?.setAttribute("src", doomguyIsabelleVideoUrl);
 });
 
 leaderboardBtn?.addEventListener('click', (event) => {
@@ -808,8 +810,8 @@ export function menuSelection(menu: string) {
             finalizeCurrentRun(true);
             stopGameTimer();
             socket.emit("stopPlaying");
-            overSection.classList.remove('hidden'); // Correction: La ligne ci-dessus devrait utiliser doomEndVideoUrl
-            video?.setAttribute("src", "assets/DoomEnd.mp4");
+            overSection.classList.remove('hidden');
+            video?.setAttribute("src", doomEndVideoUrl);
             break;
         case "leaderboard":
             leaderBoardSection.classList.remove("hidden");
@@ -865,8 +867,8 @@ export function menuSelection(menu: string) {
             startGameTimer();
             break;
         case "multi-end":
-            multiEndSection.classList.remove("hidden"); // Correction: La ligne ci-dessus devrait utiliser doomEndVideoUrl
-            video?.setAttribute("src", "assets/DoomEnd.mp4");
+            multiEndSection.classList.remove("hidden");
+            video?.setAttribute("src", doomEndVideoUrl);
             break;
         default:
             console.error("Mauvais appel de menuSelection");

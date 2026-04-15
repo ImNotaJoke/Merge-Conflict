@@ -5,9 +5,10 @@ import { player, PLAYER_RENDER_HEIGHT, PLAYER_RENDER_WIDTH } from "./gameRenderi
 import { socket } from "../socket.ts";
 import { isCoopMode } from "../gameState.ts";
 import {  isMultiplayerMode, isSpectatorMode, sendMultiPlayerShoot, multiplayerPlayers } from "../main.ts";
+import bulletImageUrl from '../../assets/bullet.png';
 
 export let bullet = new Image();
-bullet.src = "../../assets/bullet.png";
+bullet.src = bulletImageUrl;
 
 export const BULLET_RENDER_WIDTH = 12;
 export const BULLET_RENDER_HEIGHT = 12;

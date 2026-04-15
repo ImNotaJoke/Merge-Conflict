@@ -278,19 +278,22 @@ function render() {
 
 	updateBullets();
 
-	activeBullets.forEach(balle => {
-		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
-	});
+	const isBulletReady = bullet.complete && bullet.naturalWidth > 0 && bullet.naturalHeight > 0;
+	if (isBulletReady) {
+		activeBullets.forEach(balle => {
+			context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
+		});
 
-	secondPlayerBullets.forEach(balle => {
-		context.globalAlpha = 0.7;
-		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
-		context.globalAlpha = 1.0;
-	});
+		secondPlayerBullets.forEach(balle => {
+			context.globalAlpha = 0.7;
+			context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT);
+			context.globalAlpha = 1.0;
+		});
 
-	enemyBullets.forEach(balle => {
-		context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT)
-	});
+		enemyBullets.forEach(balle => {
+			context.drawImage(bullet, balle.bx, balle.by, BULLET_RENDER_WIDTH, BULLET_RENDER_HEIGHT)
+		});
+	}
 	drawBossIncomingWarning();
 	checkEnemyBulletsCollision();
 	requestAnimationFrame(render);
