@@ -20,9 +20,9 @@ const clientBuildPath = path.join(__dirname, '..', '..', 'dist');
 app.use(express.static(clientBuildPath));
 
 // Pour toutes les autres routes, renvoyer index.html pour la navigation côté client
-app.get('(.*)', (_req, res) => {
-	res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+// app.get('(.*)', (_req, res) => {
+// 	res.sendFile(path.join(clientBuildPath, 'index.html'));
+// });
 
 const connections: string[] = [];
 const playerPositions: Map<string, { posX: number; posY: number }> = new Map();
