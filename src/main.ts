@@ -118,9 +118,9 @@ const multiAlliesList = document.querySelector(".multi-allies-list");
 const skinSelect: HTMLSelectElement = document.querySelector('.skin-select')!;
 const REPLAY_BUTTON_IMAGE_URL = replayButtonImageUrl;
 
-let currentAttackTimeout: NodeJS.Timeout | null = null;
-let currentSpeedTimeout: NodeJS.Timeout | null = null;
-let currentInvincibilityTimeout: NodeJS.Timeout | null = null;
+let currentAttackTimeout: ReturnType<typeof setTimeout> | null = null;
+let currentSpeedTimeout: ReturnType<typeof setTimeout> | null = null;
+let currentInvincibilityTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export let difficulty: number = 0;
 let videoPlaying: Promise<void> | undefined;
