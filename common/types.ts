@@ -65,7 +65,8 @@ export class Player {
         if(!this.killedEnnemies.has(id)) {
             this.killedEnnemies.set(id, 1);
         } else {
-            this.killedEnnemies.set(id, this.killedEnnemies.get(id) + 1);
+            const currentCount = this.killedEnnemies.get(id) ?? 0;
+            this.killedEnnemies.set(id, currentCount + 1);
         }
     }
 

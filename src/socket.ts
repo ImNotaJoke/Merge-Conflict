@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { io } from "socket.io-client";
 
 // L'URL se base sur l'environnement. En production, il se connecte au nom de domaine de l'API.
