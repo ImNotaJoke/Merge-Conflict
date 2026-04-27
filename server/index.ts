@@ -124,7 +124,7 @@ httpServer.listen(port, () => {
 const allowedOrigins = [
     "http://localhost:8000", // Port de dev client possible
     "http://localhost:5173", // Port de dev client Vite par défaut
-    "https://merge-conflict.sulivaportefolio.live"
+    "https://merge-conflict.sulivanportefolio.live"
 ];
 
 export const io = new IOServer(httpServer, {
